@@ -18,6 +18,32 @@ export async function api(path, { method = "GET", body } = {}) {
   return data;
 }
 
+// Upload one processed image ({ full, thumb, width, height }) to an entry or card.
+// Uses XHR so we can report upload progress (fetch can't).
+export function uploadPhoto({ entryId, cardId }, img, onProgress) {
+  return new Promise((resolve, reject) => {
+    const fd = new FormData();
+    fd.append("full", img.full, img.full.type === "image/jpeg" ? "full.jpg" : "full.webp");
+    fd.append("thumb", img.thumb, "thumb");
+    fd.append("width", String(img.width));
+    fd.append("height", String(img.height));
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `/api/photos?${entryId ? `entryId=${entryId}` : `cardId=${cardId}`}`);
+    xhr.withCredentials = true;
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data.photo);
+      else reject(new ApiError(xhr.status, data.error || `อัปโหลดไม่สำเร็จ (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new ApiError(0, "เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง"));
+    xhr.send(fd);
+  });
+}
+
+export const photoUrl = (id, thumb = false) => `/api/photos/${id}${thumb ? "/thumb" : ""}`;
+
 // Diverging scale: rose (bad) → stone (neutral) → emerald (good).
 // Validated with the dataviz palette checker (CVD + normal-vision separation pass);
 // low-contrast steps always ship with a text label, never color alone.

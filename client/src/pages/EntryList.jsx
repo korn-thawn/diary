@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import { api, formatDate } from "../api";
+import { MagnifyingGlassIcon, PhotoIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { api, formatDate, photoUrl } from "../api";
 import { useAuth } from "../auth";
 import { MoodDot } from "../components/Mood";
 
@@ -161,8 +161,9 @@ export default function EntryList() {
               <li key={e.id}>
                 <Link
                   to={`/entries/${e.id}`}
-                  className="block rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
+                  className="flex gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
                 >
+                  <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="flex min-w-0 items-center gap-2 font-serif text-lg font-medium">
                       <MoodDot value={e.mood} />
@@ -175,6 +176,18 @@ export default function EntryList() {
                   <p className="mt-1 line-clamp-2 text-stone-600">{e.body}</p>
                   {e.tags.length > 0 && (
                     <p className="mt-2 text-xs text-stone-400">{e.tags.map((t) => `#${t}`).join(" ")}</p>
+                  )}
+                  </div>
+                  {e.cover_id && (
+                    <div className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                      <img src={photoUrl(e.cover_id, true)} alt="" loading="lazy" className="size-full object-cover" />
+                      {e.photo_count > 1 && (
+                        <span className="absolute right-1 bottom-1 inline-flex items-center gap-0.5 rounded bg-black/55 px-1 text-[10px] text-white">
+                          <PhotoIcon className="size-3" aria-hidden="true" />
+                          {e.photo_count}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </Link>
               </li>

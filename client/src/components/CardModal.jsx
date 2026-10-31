@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   FlagIcon,
   PaintBrushIcon,
+  PhotoIcon,
   PlusIcon,
   TagIcon,
   TrashIcon,
@@ -18,6 +19,7 @@ import { api } from "../api";
 import { color, PRIORITIES, RECURRENCES } from "../palette";
 import { useDndSensors } from "../pages/Boards";
 import { ColorPicker } from "./Pickers";
+import PhotoManager from "./Photos";
 
 // Fields the board view needs to redraw a card face
 const faceOf = (card, items) => ({
@@ -33,6 +35,7 @@ const faceOf = (card, items) => ({
   completed_at: card.completed_at,
   items_total: items.length,
   items_done: items.filter((i) => i.done).length,
+  photo_count: card.photos?.length ?? 0,
 });
 
 function Section({ icon: Icon, title, children, aside }) {
@@ -365,6 +368,18 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
 
             <Section icon={PaintBrushIcon} title="สีการ์ด">
               <ColorPicker value={card.color} onChange={(c) => patch({ color: c })} allowNone />
+            </Section>
+
+            <Section icon={PhotoIcon} title="รูป">
+              <PhotoManager
+                target={{ cardId: card.id }}
+                photos={card.photos || []}
+                onPhotosChange={(next) => {
+                  setCard((c) => ({ ...c, photos: next }));
+                  onChanged({ id: card.id, photo_count: next.length });
+                }}
+                onError={onError}
+              />
             </Section>
 
             <section>

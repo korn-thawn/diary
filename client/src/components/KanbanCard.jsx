@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   FlagIcon,
+  PhotoIcon,
 } from "@heroicons/react/16/solid";
 import { formatDate } from "../api";
 import { color, PRIORITIES, recurrenceLabel } from "../palette";
@@ -32,7 +33,7 @@ export function CardFace({ card, labelsById, todayStr, done, dragging }) {
         </div>
       )}
       <p className={`text-sm leading-snug break-words ${done ? "line-through decoration-stone-400" : ""}`}>{card.title}</p>
-      {(due || card.items_total > 0 || card.priority > 0 || card.description || card.recurrence) && (
+      {(due || card.items_total > 0 || card.priority > 0 || card.description || card.recurrence || card.photo_count > 0) && (
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">
           {due && (
             <span
@@ -70,6 +71,12 @@ export function CardFace({ card, labelsById, todayStr, done, dragging }) {
               <ArrowPathIcon className="size-3.5" aria-hidden="true" />
               <span className="sr-only">ทำซ้ำ</span>
               {recurrenceLabel(card.recurrence)}
+            </span>
+          )}
+          {card.photo_count > 0 && (
+            <span className="inline-flex items-center gap-1" title={`รูป ${card.photo_count} รูป`}>
+              <PhotoIcon className="size-3.5" aria-hidden="true" />
+              {card.photo_count}
             </span>
           )}
           {card.description && (

@@ -69,14 +69,15 @@ async function ownLabel(q, uid, id) {
 async function cardWithDetails(q, uid, id) {
   const card = await ownCard(q, uid, id);
   if (!card) return null;
-  const [items, labels] = await Promise.all([
+  const [items, labels, photos] = await Promise.all([
     q.query(
       "SELECT id::text AS id, text, done, position FROM card_items WHERE card_id = $1 ORDER BY position, id",
       [id]
     ),
     q.query("SELECT label_id::text AS id FROM card_labels WHERE card_id = $1", [id]),
+    q.query("SELECT id::text AS id, width, height FROM photos WHERE card_id = $1 ORDER BY position, id", [id]),
   ]);
-  return { ...card, items: items.rows, label_ids: labels.rows.map((r) => r.id) };
+  return { ...card, items: items.rows, label_ids: labels.rows.map((r) => r.id), photos: photos.rows, photo_count: photos.rows.length };
 }
 
 async function createColumns(q, boardId, columns) {
@@ -129,7 +130,7 @@ async function spawnNext(q, cardId, today) {
   const { rows: out } = await q.query(
     `SELECT ${CARD_COLS},
             coalesce((SELECT array_agg(cl.label_id::text) FROM card_labels cl WHERE cl.card_id = k.id), '{}') AS label_ids,
-            (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id) AS items_total, 0 AS items_done
+            (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id) AS items_total, 0 AS items_done, 0 AS photo_count
      FROM cards k WHERE k.id = $1`,
     [newId]
   );
@@ -251,7 +252,8 @@ router.get("/:id", async (req, res) => {
       `SELECT ${CARD_COLS},
               coalesce((SELECT array_agg(cl.label_id::text) FROM card_labels cl WHERE cl.card_id = k.id), '{}') AS label_ids,
               (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id) AS items_total,
-              (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id AND i.done) AS items_done
+              (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id AND i.done) AS items_done,
+              (SELECT count(*)::int FROM photos p WHERE p.card_id = k.id) AS photo_count
        FROM cards k WHERE k.board_id = $1 ORDER BY k.position, k.id`,
       [board.id]
     ),

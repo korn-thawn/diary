@@ -23,7 +23,8 @@ app.use(
   helmet({
     // No HTTPS yet: don't force https upgrades / HSTS on the sslip.io http URL.
     contentSecurityPolicy: {
-      directives: { upgradeInsecureRequests: null },
+      // blob: is needed to preview photos before they are uploaded
+      directives: { upgradeInsecureRequests: null, "img-src": ["'self'", "data:", "blob:"] },
     },
     strictTransportSecurity: process.env.COOKIE_SECURE === "true",
   })
@@ -66,6 +67,7 @@ app.use("/api/export", requireAuth, require("./routes/export"));
 app.use("/api/boards", requireAuth, require("./routes/boards"));
 app.use("/api/events", requireAuth, require("./routes/events"));
 app.use("/api/calendar", requireAuth, require("./routes/calendar").router);
+app.use("/api/photos", requireAuth, require("./routes/photos"));
 app.use("/api", (req, res) => res.status(404).json({ error: "not found" }));
 
 // Public ICS feed (no session, token in URL) — must come before the SPA fallback

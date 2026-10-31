@@ -9,6 +9,13 @@ const router = express.Router();
 const ID_RE = /^\d{1,18}$/;
 const COLUMNS =
   "id::text AS id, to_char(entry_date, 'YYYY-MM-DD') AS entry_date, title, body, mood, tags, created_at, updated_at";
+// Photo summary for lists (only valid in queries selecting FROM entries)
+const PHOTO_META = `,
+  (SELECT count(*)::int FROM photos p WHERE p.entry_id = entries.id) AS photo_count,
+  (SELECT p.id::text FROM photos p WHERE p.entry_id = entries.id ORDER BY p.position, p.id LIMIT 1) AS cover_id`;
+const PHOTOS_OF = (idExpr) =>
+  `coalesce((SELECT json_agg(json_build_object('id', p.id::text, 'width', p.width, 'height', p.height) ORDER BY p.position, p.id)
+             FROM photos p WHERE p.entry_id = ${idExpr}), '[]') AS photos`;
 
 const bad = (res, msg) => res.status(400).json({ error: msg });
 const notFound = (res) => res.status(404).json({ error: "not found" });
@@ -67,7 +74,7 @@ router.get("/", async (req, res) => {
   params.push(limit + 1, offset);
 
   const { rows } = await db.query(
-    `SELECT ${COLUMNS} FROM entries WHERE ${where.join(" AND ")}
+    `SELECT ${COLUMNS}${PHOTO_META} FROM entries WHERE ${where.join(" AND ")}
      ORDER BY entry_date DESC, id DESC
      LIMIT $${params.length - 1} OFFSET $${params.length}`,
     params
@@ -102,7 +109,7 @@ router.get("/calendar", async (req, res) => {
 router.get("/:id", async (req, res) => {
   if (!ID_RE.test(req.params.id)) return notFound(res);
   const { rows } = await db.query(
-    `SELECT ${COLUMNS} FROM entries WHERE id = $1 AND user_id = $2`,
+    `SELECT ${COLUMNS}, ${PHOTOS_OF("entries.id")} FROM entries WHERE id = $1 AND user_id = $2`,
     [req.params.id, req.session.userId]
   );
   if (!rows[0]) return notFound(res);

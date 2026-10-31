@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { TrashIcon } from "@heroicons/react/20/solid";
 import { api, today } from "../api";
 import { isDate } from "../dates";
 import { useAuth } from "../auth";
 import { MoodPicker } from "../components/Mood";
+import PhotoManager from "../components/Photos";
 
 export default function EntryEditor() {
   const { id } = useParams();
@@ -24,6 +25,8 @@ export default function EntryEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const flushPhotos = useRef(null);
 
   const handleError = (err) => {
     if (err.status === 401) return setUser(null);
@@ -33,7 +36,10 @@ export default function EntryEditor() {
   useEffect(() => {
     if (isNew) return;
     api(`/entries/${id}`)
-      .then(({ entry }) => setForm({ ...entry, tags: entry.tags.join(", ") }))
+      .then(({ entry }) => {
+        setForm({ ...entry, tags: entry.tags.join(", ") });
+        setPhotos(entry.photos || []);
+      })
       .catch((err) => (err.status === 404 ? navigate("/", { replace: true }) : handleError(err)))
       .finally(() => setLoading(false));
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -52,8 +58,18 @@ export default function EntryEditor() {
       tags: form.tags.split(",").map((t) => t.trim().replace(/^#/, "")).filter(Boolean),
     };
     try {
-      if (isNew) await api("/entries", { method: "POST", body });
-      else await api(`/entries/${id}`, { method: "PUT", body });
+      if (isNew) {
+        const { entry } = await api("/entries", { method: "POST", body });
+        // upload photos picked before the entry existed
+        const { failed } = (await flushPhotos.current?.({ entryId: entry.id })) || { failed: 0 };
+        if (failed) {
+          navigate(`/entries/${entry.id}`, { replace: true });
+          setError(`บันทึกแล้ว แต่อัปโหลดรูปไม่สำเร็จ ${failed} รูป ลองเพิ่มใหม่อีกครั้ง`);
+          return;
+        }
+      } else {
+        await api(`/entries/${id}`, { method: "PUT", body });
+      }
       navigate("/");
     } catch (err) {
       handleError(err);
@@ -102,6 +118,14 @@ export default function EntryEditor() {
         onChange={set("body")}
         required
         autoFocus={isNew}
+      />
+
+      <PhotoManager
+        target={isNew ? null : { entryId: id }}
+        photos={photos}
+        onPhotosChange={setPhotos}
+        onError={handleError}
+        flushRef={flushPhotos}
       />
 
       <input

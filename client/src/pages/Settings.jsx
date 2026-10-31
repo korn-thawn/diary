@@ -14,6 +14,7 @@ import { api } from "../api";
 import { useAuth } from "../auth";
 import LabelManager from "../components/LabelManager";
 import IcsSettings from "../components/IcsSettings";
+import PhotoUsage from "../components/PhotoUsage";
 
 function Card({ icon: Icon, title, children, danger }) {
   return (
@@ -177,7 +178,8 @@ export default function Settings() {
       </Card>
 
       <Card icon={ArrowDownTrayIcon} title="ส่งออกบันทึก">
-        <p className="mb-3 text-sm text-stone-600">ดาวน์โหลดบันทึกทั้งหมดของคุณ เรียงจากเก่าไปใหม่ (JSON รวมบอร์ดงาน การ์ด และป้ายด้วย)</p>
+        <p className="mb-3 text-sm text-stone-600">ดาวน์โหลดบันทึกทั้งหมดของคุณ เรียงจากเก่าไปใหม่ (JSON รวมบอร์ดงาน การ์ด ป้าย และวันสำคัญด้วย) <strong>ไม่รวมไฟล์รูป</strong> รูปที่แนบไว้ดาวน์โหลดทีละรูปได้จากหน้าดูรูป</p>
+        <div className="mb-4"><PhotoUsage onAuthError={() => setUser(null)} /></div>
         <div className="flex flex-wrap gap-2">
           <a className="btn btn-ghost ring-1 ring-stone-300" href="/api/export?format=md" download>
             <ArrowDownTrayIcon className="size-4" aria-hidden="true" />

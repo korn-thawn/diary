@@ -27,7 +27,8 @@ router.get("/", async (req, res) => {
 
   const { rows } = await db.query(
     `SELECT id::text AS id, to_char(entry_date, 'YYYY-MM-DD') AS entry_date, title, body, mood, tags,
-            created_at, updated_at
+            created_at, updated_at,
+            (SELECT count(*)::int FROM photos p WHERE p.entry_id = entries.id) AS photo_count
      FROM entries WHERE user_id = $1
      ORDER BY entry_date, id`,
     [req.session.userId]
@@ -49,6 +50,7 @@ router.get("/", async (req, res) => {
                    'due_date', to_char(k.due_date, 'YYYY-MM-DD'), 'due_time', to_char(k.due_time, 'HH24:MI'),
                    'priority', k.priority, 'color', k.color, 'recurrence', k.recurrence, 'completed_at', k.completed_at,
                    'created_at', k.created_at,
+                   'photo_count', (SELECT count(*) FROM photos p WHERE p.card_id = k.id),
                    'labels', coalesce((SELECT json_agg(l.name ORDER BY l.name) FROM card_labels cl
                                        JOIN labels l ON l.id = cl.label_id WHERE cl.card_id = k.id), '[]'),
                    'items', coalesce((SELECT json_agg(json_build_object('text', i.text, 'done', i.done)
