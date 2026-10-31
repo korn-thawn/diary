@@ -40,9 +40,9 @@ const lines = [
 for (const h of HUES) {
   const mid = v(`${h}-500`);
   lines.push(
-    `  --color-${h}-50: color-mix(in oklab, ${mid} 14%, ${SURFACE});`,
-    `  --color-${h}-100: color-mix(in oklab, ${mid} 20%, ${SURFACE});`,
-    `  --color-${h}-200: color-mix(in oklab, ${mid} 32%, ${SURFACE});`,
+    `  --color-${h}-50: color-mix(in oklab, ${mid} 14%, var(--color-surface));`,
+    `  --color-${h}-100: color-mix(in oklab, ${mid} 20%, var(--color-surface));`,
+    `  --color-${h}-200: color-mix(in oklab, ${mid} 32%, var(--color-surface));`,
     `  --color-${h}-700: ${v(`${h}-300`)};`,
     `  --color-${h}-800: ${v(`${h}-200`)};`,
     `  --color-${h}-900: ${v(`${h}-100`)};`

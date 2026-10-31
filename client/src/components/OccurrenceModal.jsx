@@ -200,12 +200,12 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
               </div>
               {moving && (
                 <form
-                  className="flex flex-wrap items-end gap-2 rounded-lg bg-stone-50 p-2"
+                  className="grid grid-cols-2 items-end gap-2 rounded-lg bg-stone-50 p-2 sm:flex sm:flex-wrap"
                   onSubmit={(e) => { e.preventDefault(); act(() => api(`/meetings/${m.id}/occurrences/${date}`, { method: "PUT", body: moving })).then((ok) => ok && setMoving(null)); }}
                 >
-                  <input type="date" className="input w-auto py-1 text-sm" value={moving.new_date} onChange={(e) => setMoving({ ...moving, new_date: e.target.value })} required aria-label="วันใหม่" />
-                  <input type="time" className="input w-28 py-1 text-sm" value={moving.new_start} onChange={(e) => setMoving({ ...moving, new_start: e.target.value })} required aria-label="เริ่ม" />
-                  <input type="time" className="input w-28 py-1 text-sm" value={moving.new_end} onChange={(e) => setMoving({ ...moving, new_end: e.target.value })} required aria-label="จบ" />
+                  <input type="date" className="input col-span-2 py-1 text-sm sm:w-auto" value={moving.new_date} onChange={(e) => setMoving({ ...moving, new_date: e.target.value })} required aria-label="วันใหม่" />
+                  <input type="time" className="input py-1 text-sm sm:w-28" value={moving.new_start} onChange={(e) => setMoving({ ...moving, new_start: e.target.value })} required aria-label="เริ่ม" />
+                  <input type="time" className="input py-1 text-sm sm:w-28" value={moving.new_end} onChange={(e) => setMoving({ ...moving, new_end: e.target.value })} required aria-label="จบ" />
                   <button className="btn btn-primary py-1 text-sm">เลื่อน</button>
                   <button type="button" className="btn btn-ghost py-1 text-sm" onClick={() => setMoving(null)}>ยกเลิก</button>
                 </form>

@@ -108,7 +108,18 @@
 @utility input {
   @apply w-full rounded-[6px] bg-surface px-3 py-2 outline-none;
   border: 1.5px solid color-mix(in oklab, var(--color-ink) 75%, transparent);
+  min-width: 0; /* date/time inputs on iOS refuse to shrink otherwise */
   transition: box-shadow 120ms, border-color 120ms;
+  /* iOS Safari draws date/time inputs natively: centered text, own min width, collapses when empty */
+  @supports (-webkit-touch-callout: none) {
+    &:is([type="date"], [type="time"], [type="datetime-local"]) {
+      -webkit-appearance: none;
+      appearance: none;
+      text-align: left;
+    }
+  }
+  &::-webkit-date-and-time-value { text-align: left; min-height: 1.5em; }
+  &::-webkit-datetime-edit { padding: 0; }
   &:focus {
     border-color: var(--color-title);
     box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-title) 22%, transparent);

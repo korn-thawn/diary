@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const db = require("../db");
 const requireAuth = require("../middleware/requireAuth");
+const { validateAppearance } = require("../appearance");
 
 const router = express.Router();
 
@@ -74,20 +75,20 @@ router.post("/register", loginLimiter, async (req, res) => {
   );
   if (!rows[0]) return res.status(409).json({ error: "username is taken" });
   await startSession(req, rows[0]);
-  res.status(201).json({ user: { id: String(rows[0].id), username: rows[0].username } });
+  res.status(201).json({ user: { id: String(rows[0].id), username: rows[0].username, appearance: {} } });
 });
 
 router.post("/login", loginLimiter, async (req, res) => {
   const { username, password } = readCredentials(req.body);
   const { rows } = await db.query(
-    "SELECT id, username, password_hash FROM users WHERE username = $1",
+    "SELECT id, username, password_hash, appearance FROM users WHERE username = $1",
     [username]
   );
   const user = rows[0];
   const ok = user && (await bcrypt.compare(password, user.password_hash));
   if (!ok) return res.status(401).json({ error: "invalid username or password" });
   await startSession(req, user);
-  res.json({ user: { id: String(user.id), username: user.username } });
+  res.json({ user: { id: String(user.id), username: user.username, appearance: user.appearance } });
 });
 
 router.post("/logout", (req, res, next) => {
@@ -98,9 +99,19 @@ router.post("/logout", (req, res, next) => {
   });
 });
 
-router.get("/me", (req, res) => {
+router.get("/me", async (req, res) => {
   if (!req.session.userId) return res.status(401).json({ error: "unauthorized" });
-  res.json({ user: { id: req.session.userId, username: req.session.username } });
+  const { rows } = await db.query("SELECT appearance FROM users WHERE id = $1", [req.session.userId]);
+  if (!rows[0]) return res.status(401).json({ error: "unauthorized" }); // account was deleted
+  res.json({ user: { id: req.session.userId, username: req.session.username, appearance: rows[0].appearance } });
+});
+
+// PUT /api/auth/appearance — colors / fonts / text size (the whole object, replaces the old one)
+router.put("/appearance", requireAuth, async (req, res) => {
+  const { value, error } = validateAppearance(req.body);
+  if (error) return res.status(400).json({ error });
+  await db.query("UPDATE users SET appearance = $2 WHERE id = $1", [req.session.userId, value]);
+  res.json({ appearance: value });
 });
 
 // PUT /api/auth/password — change password, log out every other device

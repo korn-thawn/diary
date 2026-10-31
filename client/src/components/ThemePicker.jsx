@@ -23,7 +23,7 @@ export default function ThemePicker() {
           role="radio"
           aria-checked={pref === value}
           onClick={() => choose(value)}
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${
+          className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2 py-2 text-sm transition ${
             pref === value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
           }`}
         >

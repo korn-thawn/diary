@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api } from "./api";
+import { applyAppearance, clearAppearance } from "./appearance";
 
 const AuthContext = createContext(null);
 
@@ -16,6 +17,11 @@ export function AuthProvider({ children }) {
       .catch(() => {});
   }, []);
 
+  // The account's colors / fonts follow the logged-in user (cached for the next page load)
+  useEffect(() => {
+    if (user?.appearance) applyAppearance(user.appearance);
+  }, [user]);
+
   const login = useCallback(async (username, password) => {
     const d = await api("/auth/login", { method: "POST", body: { username, password } });
     setUser(d.user);
@@ -28,6 +34,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     await api("/auth/logout", { method: "POST" }).catch(() => {});
+    clearAppearance();
     setUser(null);
   }, []);
 

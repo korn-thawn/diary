@@ -102,16 +102,16 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
 
         <input className="input" placeholder="หัวข้อ เช่น Standup, คุยลูกค้า" value={form.title} onChange={set("title")} maxLength={150} required autoFocus={!meeting} />
 
-        <div className="grid grid-cols-[1fr_auto_auto] items-end gap-2">
-          <label className="block text-sm">
+        <div className="grid grid-cols-2 items-end gap-2 sm:grid-cols-[minmax(0,1fr)_7rem_7rem]">
+          <label className="col-span-2 block min-w-0 text-sm sm:col-span-1">
             <span className="mb-1 block text-stone-600">{form.repeat === "none" ? "วันที่" : "เริ่มวันที่"}</span>
             <input type="date" className="input" value={form.date} onChange={set("date")} required />
           </label>
-          <label className="block text-sm">
+          <label className="block min-w-0 text-sm">
             <span className="mb-1 block text-stone-600">เริ่ม</span>
             <input
               type="time"
-              className="input w-28"
+              className="input"
               value={form.start_time}
               onChange={(e) => {
                 const v = e.target.value;
@@ -120,9 +120,9 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
               required
             />
           </label>
-          <label className="block text-sm">
+          <label className="block min-w-0 text-sm">
             <span className="mb-1 block text-stone-600">จบ</span>
-            <input type="time" className="input w-28" value={form.end_time} onChange={set("end_time")} min={form.start_time} required />
+            <input type="time" className="input" value={form.end_time} onChange={set("end_time")} min={form.start_time} required />
           </label>
         </div>
 

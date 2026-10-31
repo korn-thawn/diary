@@ -246,10 +246,10 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
             <div className="grid gap-4 sm:grid-cols-2">
               <Section icon={CalendarIcon} title="กำหนดส่ง">
                 <div className="flex gap-2">
-                  <input type="date" className="input py-1.5 text-sm" value={card.due_date || ""} onChange={(e) => patch({ due_date: e.target.value || null })} aria-label="วันที่กำหนด" />
+                  <input type="date" className="input min-w-0 flex-1 py-1.5 text-sm" value={card.due_date || ""} onChange={(e) => patch({ due_date: e.target.value || null })} aria-label="วันที่กำหนด" />
                   <input
                     type="time"
-                    className="input w-28 py-1.5 text-sm"
+                    className="input w-28 shrink-0 py-1.5 text-sm"
                     value={card.due_time || ""}
                     disabled={!card.due_date}
                     onChange={(e) => patch({ due_time: e.target.value || null })}

@@ -58,14 +58,14 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
     <Dialog title={event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"} icon={StarIcon} onClose={onClose}>
       <form onSubmit={save} className="space-y-4">
         <input className="input" placeholder="เช่น วันเกิดแม่, ครบรอบแต่งงาน, จ่ายค่าเช่า" value={form.title} onChange={set("title")} maxLength={100} required autoFocus />
-        <div className="grid grid-cols-[1fr_auto] gap-2">
-          <label className="block text-sm">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,7rem)] items-end gap-2">
+          <label className="block min-w-0 text-sm">
             <span className="mb-1 block text-stone-600">วันที่ {form.repeat === "yearly" && <span className="text-xs text-stone-400">(ใส่ปีจริงเพื่อนับว่าครบกี่ปี)</span>}</span>
             <input type="date" className="input" value={form.date} onChange={set("date")} required />
           </label>
-          <label className="block text-sm">
+          <label className="block min-w-0 text-sm">
             <span className="mb-1 block text-stone-600">เวลา</span>
-            <input type="time" className="input w-28" value={form.time} onChange={set("time")} aria-label="เวลา (ไม่บังคับ)" />
+            <input type="time" className="input" value={form.time} onChange={set("time")} aria-label="เวลา (ไม่บังคับ)" />
           </label>
         </div>
         <div>

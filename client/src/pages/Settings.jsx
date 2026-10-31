@@ -19,6 +19,8 @@ import IcsSettings from "../components/IcsSettings";
 import PhotoUsage from "../components/PhotoUsage";
 import TelegramSettings from "../components/TelegramSettings";
 import ThemePicker from "../components/ThemePicker";
+import AppearanceSettings from "../components/AppearanceSettings";
+import { clearAppearance } from "../appearance";
 
 function Card({ icon: Icon, title, children, danger }) {
   return (
@@ -102,6 +104,7 @@ export default function Settings() {
     setDelMsg(null);
     try {
       await api("/auth/account", { method: "DELETE", body: { password: del.password } });
+      clearAppearance();
       setUser(null);
       navigate("/login", { replace: true });
     } catch (err) {
@@ -173,8 +176,9 @@ export default function Settings() {
         </div>
       </Card>
 
-      <Card icon={SwatchIcon} title="การแสดงผล">
+      <Card icon={SwatchIcon} title="หน้าตา">
         <ThemePicker />
+        <AppearanceSettings onAuthError={() => setUser(null)} />
       </Card>
 
       <Card icon={BellAlertIcon} title="แจ้งเตือน Telegram">
