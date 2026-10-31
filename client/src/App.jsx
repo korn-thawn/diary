@@ -17,6 +17,7 @@ import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
 import Boards from "./pages/Boards";
 import Board from "./pages/Board";
+import Events from "./pages/Events";
 
 function InsecureBanner() {
   const { protocol, hostname } = window.location;
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/entries/:id" element={protect(<EntryEditor />)} />
           <Route path="/boards" element={protect(<Boards />)} />
           <Route path="/boards/:id" element={protect(<Board />)} />
+          <Route path="/events" element={protect(<Events />)} />
           <Route path="/calendar" element={protect(<Calendar />)} />
           <Route path="/stats" element={protect(<Stats />)} />
           <Route path="/settings" element={protect(<Settings />)} />

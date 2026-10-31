@@ -19,7 +19,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import { api, today } from "../api";
+import { api, formatDate, today } from "../api";
 import { useAuth } from "../auth";
 import { boardIcon, color } from "../palette";
 import { groupCards, matchesFilter } from "../kanban";
@@ -123,11 +123,23 @@ export default function Board() {
   const snapshot = useRef(null);
   const dragFrom = useRef(null);
 
-  const fail = (err) => {
-    if (err.status === 401) return setUser(null);
-    setToast(err.message);
+  const notify = (msg) => {
+    setToast(msg);
     setTimeout(() => setToast(""), 4000);
   };
+  const fail = (err) => (err.status === 401 ? setUser(null) : notify(err.message));
+  // Put cards spawned by recurring cards into their column and tell the user
+  function addSpawned(list) {
+    if (!list?.length) return;
+    setByCol((m) => {
+      const next = { ...m };
+      for (const s of list) next[s.column_id] = [...(next[s.column_id] || []).filter((c) => c.id !== s.id), s];
+      return next;
+    });
+    notify(list.length === 1
+      ? `สร้างงานรอบถัดไปแล้ว: ${list[0].title} (${formatDate(list[0].due_date, { day: "numeric", month: "short" })})`
+      : `สร้างงานรอบถัดไปแล้ว ${list.length} รายการ`);
+  }
 
   async function load() {
     try {
@@ -225,7 +237,9 @@ export default function Board() {
       [col]: m[col].map((c) => (c.id === cardId ? { ...c, completed_at: target.is_done ? c.completed_at || new Date().toISOString() : null } : c)),
     }));
     try {
-      await api(`/boards/cards/${cardId}/move`, { method: "PUT", body: { columnId: col, orderedIds: map[col].map((c) => c.id) } });
+      const res = await api(`/boards/cards/${cardId}/move`, { method: "PUT", body: { columnId: col, orderedIds: map[col].map((c) => c.id), today: todayStr } });
+      if (res.spawned) addSpawned([res.spawned]);
+      setByCol((m) => ({ ...m, [col]: m[col].map((c) => (c.id === cardId ? { ...c, next_card_id: res.card.next_card_id, completed_at: res.card.completed_at } : c)) }));
     } catch (err) {
       revert();
       fail(err);
@@ -264,9 +278,12 @@ export default function Board() {
   }
   async function updateColumn(colId, patch) {
     try {
-      const { column } = await api(`/boards/columns/${colId}`, { method: "PATCH", body: patch });
+      const { column, spawned } = await api(`/boards/columns/${colId}`, { method: "PATCH", body: { ...patch, today: todayStr } });
       setColumns((cs) => cs.map((c) => (c.id === colId ? column : c)));
-      if (patch.is_done !== undefined) load(); // completed_at of its cards changed
+      if (patch.is_done !== undefined) {
+        await load(); // completed_at of its cards changed (and maybe new recurring cards)
+        if (spawned?.length) addSpawned(spawned);
+      }
     } catch (err) { fail(err); }
   }
   async function deleteColumn(col, opts = {}) {

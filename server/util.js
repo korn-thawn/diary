@@ -18,9 +18,10 @@ function localToday() {
 
 // Allowed customization keys. Must match client/src/palette.js.
 const COLORS = ["stone", "rose", "orange", "amber", "lime", "emerald", "teal", "sky", "indigo", "fuchsia"];
-const BOARD_ICONS = [
+// Icons shared by boards and important dates
+const ICONS = [
   "clipboard", "briefcase", "home", "banknotes", "airplane", "heart",
-  "academic", "cart", "lightbulb", "wrench", "gift", "star",
+  "academic", "cart", "lightbulb", "wrench", "gift", "star", "cake", "bell",
 ];
 
 const ID_RE = /^\d{1,18}$/;
@@ -59,4 +60,4 @@ function sameIdSet(a, b) {
   return sa.every((x) => set.has(x));
 }
 
-module.exports = { isDate, localToday, COLORS, BOARD_ICONS, isId, TIME_RE, str, tx, sameIdSet };
+module.exports = { isDate, localToday, COLORS, ICONS, isId, TIME_RE, str, tx, sameIdSet };

@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
 
   if (format === "json") {
-    const [boards, labels] = await Promise.all([
+    const [boards, labels, events] = await Promise.all([
       db.query(
         `SELECT b.name, b.color, b.icon, b.archived,
            coalesce((SELECT json_agg(json_build_object(
@@ -47,7 +47,7 @@ router.get("/", async (req, res) => {
                'cards', coalesce((SELECT json_agg(json_build_object(
                    'title', k.title, 'description', k.description,
                    'due_date', to_char(k.due_date, 'YYYY-MM-DD'), 'due_time', to_char(k.due_time, 'HH24:MI'),
-                   'priority', k.priority, 'color', k.color, 'completed_at', k.completed_at,
+                   'priority', k.priority, 'color', k.color, 'recurrence', k.recurrence, 'completed_at', k.completed_at,
                    'created_at', k.created_at,
                    'labels', coalesce((SELECT json_agg(l.name ORDER BY l.name) FROM card_labels cl
                                        JOIN labels l ON l.id = cl.label_id WHERE cl.card_id = k.id), '[]'),
@@ -59,10 +59,15 @@ router.get("/", async (req, res) => {
         [req.session.userId]
       ),
       db.query("SELECT name, color FROM labels WHERE user_id = $1 ORDER BY name", [req.session.userId]),
+      db.query(
+        `SELECT title, to_char(date, 'YYYY-MM-DD') AS date, repeat, to_char(time, 'HH24:MI') AS time, color, icon, note
+         FROM events WHERE user_id = $1 ORDER BY date, id`,
+        [req.session.userId]
+      ),
     ]);
     res.type("application/json").send(
       JSON.stringify(
-        { exportedAt: new Date().toISOString(), username, entries: rows, labels: labels.rows, boards: boards.rows },
+        { exportedAt: new Date().toISOString(), username, entries: rows, events: events.rows, labels: labels.rows, boards: boards.rows },
         null,
         2
       )

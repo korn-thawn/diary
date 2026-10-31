@@ -1,9 +1,11 @@
-// Customization palette. Keys must match server/util.js COLORS / BOARD_ICONS.
+// Customization palette. Keys must match server/util.js COLORS / ICONS.
 // Class names are written out in full so Tailwind's scanner picks them up.
 import {
   AcademicCapIcon,
   BanknotesIcon,
+  BellIcon,
   BriefcaseIcon,
+  CakeIcon,
   ClipboardDocumentListIcon,
   GiftIcon,
   HeartIcon,
@@ -43,8 +45,20 @@ export const BOARD_ICONS = {
   wrench: { label: "ซ่อม", Icon: WrenchScrewdriverIcon },
   gift: { label: "ของขวัญ", Icon: GiftIcon },
   star: { label: "สำคัญ", Icon: StarIcon },
+  cake: { label: "วันเกิด", Icon: CakeIcon },
+  bell: { label: "เตือน", Icon: BellIcon },
 };
+export const ICONS = BOARD_ICONS;
 export const boardIcon = (key) => (BOARD_ICONS[key] || BOARD_ICONS.clipboard).Icon;
+
+export const RECURRENCES = [
+  { value: null, label: "ไม่ซ้ำ" },
+  { value: "daily", label: "ทุกวัน" },
+  { value: "weekly", label: "ทุกสัปดาห์" },
+  { value: "monthly", label: "ทุกเดือน" },
+  { value: "yearly", label: "ทุกปี" },
+];
+export const recurrenceLabel = (v) => RECURRENCES.find((r) => r.value === v)?.label ?? "";
 
 export const PRIORITIES = [
   { value: 0, label: "ไม่ระบุ" },

@@ -148,4 +148,42 @@ router.delete("/account", requireAuth, loginLimiter, async (req, res, next) => {
   });
 });
 
+// ---------- ICS feed (Google Calendar subscribe-by-URL) ----------
+async function icsState(req) {
+  const { rows } = await db.query("SELECT ics_token, ics_cards, ics_events FROM users WHERE id = $1", [req.session.userId]);
+  const u = rows[0];
+  return {
+    enabled: Boolean(u.ics_token),
+    url: u.ics_token ? `${req.protocol}://${req.get("host")}/ical/${u.ics_token}.ics` : null,
+    cards: u.ics_cards,
+    events: u.ics_events,
+  };
+}
+
+router.get("/ics", requireAuth, async (req, res) => res.json(await icsState(req)));
+
+// Create or rotate the secret URL (old URL stops working immediately)
+router.post("/ics", requireAuth, async (req, res) => {
+  const token = require("node:crypto").randomBytes(32).toString("hex");
+  await db.query("UPDATE users SET ics_token = $2 WHERE id = $1", [req.session.userId, token]);
+  res.json(await icsState(req));
+});
+
+router.patch("/ics", requireAuth, async (req, res) => {
+  const { cards, events } = req.body || {};
+  if ((cards !== undefined && typeof cards !== "boolean") || (events !== undefined && typeof events !== "boolean")) {
+    return res.status(400).json({ error: "cards and events must be boolean" });
+  }
+  await db.query(
+    "UPDATE users SET ics_cards = coalesce($2, ics_cards), ics_events = coalesce($3, ics_events) WHERE id = $1",
+    [req.session.userId, cards ?? null, events ?? null]
+  );
+  res.json(await icsState(req));
+});
+
+router.delete("/ics", requireAuth, async (req, res) => {
+  await db.query("UPDATE users SET ics_token = NULL WHERE id = $1", [req.session.userId]);
+  res.json(await icsState(req));
+});
+
 module.exports = router;

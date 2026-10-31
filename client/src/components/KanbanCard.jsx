@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ArrowPathIcon,
   Bars3BottomLeftIcon,
   CalendarIcon,
   CheckCircleIcon,
@@ -8,7 +9,7 @@ import {
   FlagIcon,
 } from "@heroicons/react/16/solid";
 import { formatDate } from "../api";
-import { color, PRIORITIES } from "../palette";
+import { color, PRIORITIES, recurrenceLabel } from "../palette";
 import { dueInfo } from "../kanban";
 
 export function CardFace({ card, labelsById, todayStr, done, dragging }) {
@@ -31,7 +32,7 @@ export function CardFace({ card, labelsById, todayStr, done, dragging }) {
         </div>
       )}
       <p className={`text-sm leading-snug break-words ${done ? "line-through decoration-stone-400" : ""}`}>{card.title}</p>
-      {(due || card.items_total > 0 || card.priority > 0 || card.description) && (
+      {(due || card.items_total > 0 || card.priority > 0 || card.description || card.recurrence) && (
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500">
           {due && (
             <span
@@ -62,6 +63,13 @@ export function CardFace({ card, labelsById, todayStr, done, dragging }) {
             <span className={`inline-flex items-center gap-1 ${card.priority === 3 ? "font-medium text-rose-700" : ""}`}>
               <FlagIcon className="size-3.5" aria-hidden="true" />
               {PRIORITIES[card.priority].label}
+            </span>
+          )}
+          {card.recurrence && (
+            <span className="inline-flex items-center gap-1" title={`ทำซ้ำ${recurrenceLabel(card.recurrence)}`}>
+              <ArrowPathIcon className="size-3.5" aria-hidden="true" />
+              <span className="sr-only">ทำซ้ำ</span>
+              {recurrenceLabel(card.recurrence)}
             </span>
           )}
           {card.description && (

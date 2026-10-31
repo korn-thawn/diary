@@ -1,6 +1,8 @@
 const express = require("express");
 const db = require("../db");
 const { isDate } = require("../util");
+const { addPeriod } = require("../recur");
+const { entrySummary } = require("./calendar");
 
 const router = express.Router();
 
@@ -91,14 +93,9 @@ router.get("/calendar", async (req, res) => {
   if (typeof month !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
     return bad(res, "month must be YYYY-MM");
   }
-  const { rows } = await db.query(
-    `SELECT to_char(entry_date, 'YYYY-MM-DD') AS date, count(*)::int AS count,
-            round(avg(mood))::int AS mood, min(id)::text AS first_id
-     FROM entries
-     WHERE user_id = $1 AND entry_date >= $2::date AND entry_date < ($2::date + interval '1 month')
-     GROUP BY entry_date ORDER BY entry_date`,
-    [req.session.userId, `${month}-01`]
-  );
+  const first = `${month}-01`;
+  const last = addPeriod(addPeriod(first, "month", 1), "day", -1);
+  const rows = await entrySummary(req.session.userId, first, last);
   res.json({ days: rows });
 });
 

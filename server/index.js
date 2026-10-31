@@ -64,7 +64,12 @@ app.use("/api/entries", requireAuth, require("./routes/entries"));
 app.use("/api/stats", requireAuth, require("./routes/stats"));
 app.use("/api/export", requireAuth, require("./routes/export"));
 app.use("/api/boards", requireAuth, require("./routes/boards"));
+app.use("/api/events", requireAuth, require("./routes/events"));
+app.use("/api/calendar", requireAuth, require("./routes/calendar").router);
 app.use("/api", (req, res) => res.status(404).json({ error: "not found" }));
+
+// Public ICS feed (no session, token in URL) — must come before the SPA fallback
+app.use("/ical", require("./routes/ical"));
 
 // React build: hashed assets get long cache, index.html never cached
 app.use(

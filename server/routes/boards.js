@@ -1,6 +1,9 @@
 const express = require("express");
 const db = require("../db");
-const { isDate, localToday, COLORS, BOARD_ICONS, isId, TIME_RE, str, tx, sameIdSet } = require("../util");
+const { isDate, localToday, COLORS, ICONS, isId, TIME_RE, str, tx, sameIdSet } = require("../util");
+const { nextDue } = require("../recur");
+
+const RECURRENCES = ["daily", "weekly", "monthly", "yearly"];
 
 const router = express.Router();
 
@@ -18,7 +21,8 @@ const BOARD_COLS = "b.id::text AS id, b.name, b.color, b.icon, b.position, b.arc
 const COLUMN_COLS = "c.id::text AS id, c.name, c.color, c.position, c.is_done";
 const CARD_COLS = `k.id::text AS id, k.column_id::text AS column_id, k.title, k.description,
   to_char(k.due_date, 'YYYY-MM-DD') AS due_date, to_char(k.due_time, 'HH24:MI') AS due_time,
-  k.priority, k.color, k.position, k.completed_at, k.created_at, k.updated_at`;
+  k.priority, k.color, k.position, k.completed_at, k.created_at, k.updated_at,
+  k.recurrence, k.next_card_id::text AS next_card_id`;
 const LABEL_COLS = "l.id::text AS id, l.name, l.color";
 
 // ---------- ownership helpers (return row or null) ----------
@@ -91,6 +95,48 @@ const reorder = (q, table, ids) =>
      FROM unnest($1::bigint[]) WITH ORDINALITY AS o(id, ord) WHERE t.id = o.id`,
     [ids]
   );
+
+// A recurring card just reached a done column: create the next one (once).
+// Returns the new card in board-view shape, or null.
+async function spawnNext(q, cardId, today) {
+  const { rows } = await q.query(
+    `SELECT id, board_id, title, description, priority, color, recurrence,
+            to_char(due_date, 'YYYY-MM-DD') AS due_date, due_time, next_card_id
+     FROM cards WHERE id = $1 FOR UPDATE`,
+    [cardId]
+  );
+  const c = rows[0];
+  if (!c || !c.recurrence || !c.due_date || c.next_card_id) return null;
+  const { rows: cols } = await q.query(
+    "SELECT id FROM board_columns WHERE board_id = $1 AND NOT is_done ORDER BY position, id LIMIT 1",
+    [c.board_id]
+  );
+  if (!cols[0]) return null; // every column is a done column: nowhere to put it
+  const due = nextDue(c.due_date, c.recurrence, today);
+  const { rows: ins } = await q.query(
+    `INSERT INTO cards (board_id, column_id, title, description, due_date, due_time, priority, color, recurrence, position)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, (SELECT coalesce(max(position) + 1, 0) FROM cards WHERE column_id = $2))
+     RETURNING id`,
+    [c.board_id, cols[0].id, c.title, c.description, due, c.due_time, c.priority, c.color, c.recurrence]
+  );
+  const newId = ins[0].id;
+  await q.query("INSERT INTO card_labels (card_id, label_id) SELECT $1, label_id FROM card_labels WHERE card_id = $2", [newId, c.id]);
+  await q.query(
+    "INSERT INTO card_items (card_id, text, done, position) SELECT $1, text, false, position FROM card_items WHERE card_id = $2",
+    [newId, c.id]
+  );
+  await q.query("UPDATE cards SET next_card_id = $2 WHERE id = $1", [c.id, newId]);
+  const { rows: out } = await q.query(
+    `SELECT ${CARD_COLS},
+            coalesce((SELECT array_agg(cl.label_id::text) FROM card_labels cl WHERE cl.card_id = k.id), '{}') AS label_ids,
+            (SELECT count(*)::int FROM card_items i WHERE i.card_id = k.id) AS items_total, 0 AS items_done
+     FROM cards k WHERE k.id = $1`,
+    [newId]
+  );
+  return out[0];
+}
+
+const todayOf = (req) => (isDate(req.body?.today) ? req.body.today : isDate(req.query.today) ? req.query.today : localToday());
 
 // ---------- labels (shared across boards) ----------
 router.get("/labels", async (req, res) => {
@@ -172,7 +218,7 @@ router.post("/", async (req, res) => {
   const icon = req.body?.icon ?? "clipboard";
   if (!name) return bad(res, "name must be 1-60 characters");
   if (!COLORS.includes(color)) return bad(res, "invalid color");
-  if (!BOARD_ICONS.includes(icon)) return bad(res, "invalid icon");
+  if (!ICONS.includes(icon)) return bad(res, "invalid icon");
   const board = await tx(db.pool, async (q) => {
     const { rows } = await q.query(
       `INSERT INTO boards (user_id, name, color, icon, position)
@@ -224,7 +270,7 @@ router.patch("/:id", async (req, res) => {
   const archived = b.archived ?? board.archived;
   if (!name) return bad(res, "name must be 1-60 characters");
   if (!COLORS.includes(color)) return bad(res, "invalid color");
-  if (!BOARD_ICONS.includes(icon)) return bad(res, "invalid icon");
+  if (!ICONS.includes(icon)) return bad(res, "invalid icon");
   if (typeof archived !== "boolean") return bad(res, "archived must be boolean");
   await db.query("UPDATE boards SET name = $2, color = $3, icon = $4, archived = $5 WHERE id = $1", [
     board.id, name, color, icon, archived,
@@ -277,6 +323,7 @@ router.patch("/columns/:cid", async (req, res) => {
   if (!name) return bad(res, "name must be 1-40 characters");
   if (!COLORS.includes(color)) return bad(res, "invalid color");
   if (typeof isDone !== "boolean") return bad(res, "is_done must be boolean");
+  const spawned = [];
   const column = await tx(db.pool, async (q) => {
     const { rows } = await q.query(
       `UPDATE board_columns SET name = $2, color = $3, is_done = $4 WHERE id = $1
@@ -289,10 +336,20 @@ router.patch("/columns/:cid", async (req, res) => {
         `UPDATE cards SET completed_at = ${isDone ? "coalesce(completed_at, now())" : "NULL"} WHERE column_id = $1`,
         [col.id]
       );
+      if (isDone) {
+        const { rows: rec } = await q.query(
+          "SELECT id FROM cards WHERE column_id = $1 AND recurrence IS NOT NULL AND next_card_id IS NULL ORDER BY position",
+          [col.id]
+        );
+        for (const r of rec) {
+          const s = await spawnNext(q, r.id, todayOf(req));
+          if (s) spawned.push(s);
+        }
+      }
     }
     return rows[0];
   });
-  res.json({ column });
+  res.json({ column, spawned });
 });
 
 // DELETE /columns/:cid?moveTo=<cid> | ?deleteCards=1
@@ -365,11 +422,17 @@ router.patch("/cards/:id", async (req, res) => {
     due_time: b.due_time === undefined ? card.due_time : b.due_time || null,
     priority: b.priority ?? card.priority,
     color: b.color === undefined ? card.color : b.color || null,
+    recurrence: b.recurrence === undefined ? card.recurrence : b.recurrence || null,
   };
   if (!v.title) return bad(res, "title must be 1-200 characters");
   if (typeof v.description !== "string" || v.description.length > 20000) return bad(res, "description is too long");
   if (v.due_date !== null && !isDate(v.due_date)) return bad(res, "due_date must be YYYY-MM-DD");
   if (v.due_time !== null && !TIME_RE.test(v.due_time)) return bad(res, "due_time must be HH:MM");
+  if (v.recurrence !== null && !RECURRENCES.includes(v.recurrence)) return bad(res, "recurrence must be daily, weekly, monthly or yearly");
+  if (v.recurrence !== null && v.due_date === null) {
+    if (b.recurrence) return bad(res, "a recurring card needs a due date");
+    v.recurrence = null; // clearing the date also stops the repeat
+  }
   if (v.due_date === null) v.due_time = null; // a time without a date makes no sense
   if (!Number.isInteger(v.priority) || v.priority < 0 || v.priority > 3) return bad(res, "priority must be 0-3");
   if (v.color !== null && !COLORS.includes(v.color)) return bad(res, "invalid color");
@@ -387,8 +450,8 @@ router.patch("/cards/:id", async (req, res) => {
   await tx(db.pool, async (q) => {
     await q.query(
       `UPDATE cards SET title = $2, description = $3, due_date = $4, due_time = $5, priority = $6, color = $7,
-         updated_at = now() WHERE id = $1`,
-      [card.id, v.title, v.description, v.due_date, v.due_time, v.priority, v.color]
+         recurrence = $8, updated_at = now() WHERE id = $1`,
+      [card.id, v.title, v.description, v.due_date, v.due_time, v.priority, v.color, v.recurrence]
     );
     if (labelIds) {
       await q.query("DELETE FROM card_labels WHERE card_id = $1", [card.id]);
@@ -420,7 +483,7 @@ router.put("/cards/:id/move", async (req, res) => {
   const ids = req.body?.orderedIds;
   if (!Array.isArray(ids) || !ids.every(isId)) return bad(res, "orderedIds must be an array of ids");
 
-  await tx(db.pool, async (q) => {
+  const spawned = await tx(db.pool, async (q) => {
     // Lock the target column's cards so the check and the write see the same state
     const { rows } = await q.query(
       "SELECT id::text AS id FROM cards WHERE column_id = $1 AND id <> $2 FOR UPDATE",
@@ -441,8 +504,9 @@ router.put("/cards/:id/move", async (req, res) => {
       );
     }
     await reorder(q, "cards", ids);
+    return target.is_done && !card.is_done ? spawnNext(q, card.id, todayOf(req)) : null;
   });
-  res.json({ card: await ownCard(db, uid, card.id) });
+  res.json({ card: await ownCard(db, uid, card.id), spawned });
 });
 
 // ---------- checklist items ----------

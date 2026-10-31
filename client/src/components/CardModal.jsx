@@ -3,6 +3,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ArrowPathIcon,
   Bars2Icon,
   CalendarIcon,
   CheckCircleIcon,
@@ -14,7 +15,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { api } from "../api";
-import { color, PRIORITIES } from "../palette";
+import { color, PRIORITIES, RECURRENCES } from "../palette";
 import { useDndSensors } from "../pages/Boards";
 import { ColorPicker } from "./Pickers";
 
@@ -28,6 +29,7 @@ const faceOf = (card, items) => ({
   priority: card.priority,
   color: card.color,
   label_ids: card.label_ids,
+  recurrence: card.recurrence,
   completed_at: card.completed_at,
   items_total: items.length,
   items_done: items.filter((i) => i.done).length,
@@ -329,6 +331,33 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                 </div>
               </Section>
             </div>
+
+            <Section icon={ArrowPathIcon} title="ทำซ้ำ">
+              <div className="flex flex-wrap gap-1" role="radiogroup" aria-label="ทำซ้ำ">
+                {RECURRENCES.map((r) => (
+                  <button
+                    key={r.label}
+                    type="button"
+                    role="radio"
+                    aria-checked={card.recurrence === r.value}
+                    disabled={!card.due_date && r.value !== null}
+                    onClick={() => patch({ recurrence: r.value })}
+                    className={`rounded-lg px-2.5 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                      card.recurrence === r.value ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-stone-500">
+                {!card.due_date
+                  ? "ตั้งกำหนดส่งก่อนถึงจะเลือกทำซ้ำได้"
+                  : card.recurrence
+                    ? "เมื่อย้ายการ์ดนี้ไปคอลัมน์ที่เสร็จแล้ว จะสร้างการ์ดรอบถัดไปให้อัตโนมัติ (คัดลอกป้ายและเช็กลิสต์ไปด้วย)"
+                    : "เลือกความถี่ แล้วระบบจะสร้างการ์ดรอบถัดไปเมื่องานนี้เสร็จ"}
+              </p>
+            </Section>
 
             <Section icon={TagIcon} title="ป้าย">
               <LabelPicker labels={labels} selected={card.label_ids} onToggle={toggleLabel} onCreate={createLabel} />

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import {
   ArrowDownTrayIcon,
   ArrowRightStartOnRectangleIcon,
+  CalendarDaysIcon,
   ComputerDesktopIcon,
   ExclamationTriangleIcon,
   KeyIcon,
@@ -12,6 +13,7 @@ import {
 import { api } from "../api";
 import { useAuth } from "../auth";
 import LabelManager from "../components/LabelManager";
+import IcsSettings from "../components/IcsSettings";
 
 function Card({ icon: Icon, title, children, danger }) {
   return (
@@ -164,6 +166,10 @@ export default function Settings() {
           </button>
           <Msg msg={othersMsg} />
         </div>
+      </Card>
+
+      <Card icon={CalendarDaysIcon} title="เชื่อมกับ Google Calendar">
+        <IcsSettings onAuthError={() => setUser(null)} />
       </Card>
 
       <Card icon={TagIcon} title="ป้ายของการ์ดงาน">
