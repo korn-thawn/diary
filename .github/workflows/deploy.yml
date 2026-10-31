@@ -1,0 +1,49 @@
+# From cloud_server/templates/deploy.yml (+ npm run migrate in the pm2 block)
+# Repo secrets:
+#   SSH_KEY          private key of ~/.ssh/deploy-github (laptop) — its pubkey is in deploy@server
+#   SSH_KNOWN_HOSTS  the server host key line (cloud_server docs/status.md), so the runner can't be MITM'd
+# One-time on the server (as deploy): git clone <repo> /srv/apps/<APP>
+#   private repo → add a read-only Deploy key to the repo (see cloud_server docs/05-auto-deploy.md)
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HOST: 129.221.151.25
+      APP: diary         # folder under /srv/apps
+      MODE: pm2          # docker → docker compose up --build | pm2 → npm ci, build, migrate, pm2 reload
+      BRANCH: main
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh deploy@"$HOST" "APP=$APP MODE=$MODE BRANCH=$BRANCH bash -s" <<'EOS'
+          set -euo pipefail
+          cd "/srv/apps/$APP"
+          git fetch --quiet origin "$BRANCH"
+          git merge --ff-only "origin/$BRANCH"
+          if [ "$MODE" = docker ]; then
+            docker compose up -d --build --remove-orphans
+            docker image prune -f >/dev/null
+          else
+            npm ci
+            npm run build --if-present
+            npm run migrate
+            pm2 startOrReload ecosystem.config.js --update-env
+            pm2 save
+          fi
+          echo "deployed $APP @ $(git rev-parse --short HEAD)"
+          EOS

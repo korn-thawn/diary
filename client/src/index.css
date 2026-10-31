@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Sarabun", "Noto Sans Thai", "Leelawadee UI", system-ui, sans-serif;
+  --font-serif: "Noto Serif Thai", "Georgia", serif;
+  --color-paper: #f7f3ec;
+  --color-ink: #2b2620;
+  --color-accent: #b5552b;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+}
+
+@utility input {
+  @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1 rounded-lg px-4 py-2 font-medium transition disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply bg-accent text-white hover:bg-accent/90;
+}
+
+@utility btn-ghost {
+  @apply text-stone-600 hover:bg-stone-200/60;
+}
