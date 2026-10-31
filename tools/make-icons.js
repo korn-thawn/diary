@@ -1,13 +1,13 @@
 // Generates the PWA / home-screen PNG icons into client/public/icons (no dependencies).
 // Run once (or after changing the design):  node tools/make-icons.js
-// Design: open book in white on the accent color. Maskable variant is full-bleed with a 20% safe zone.
+// Design: cream open book on the title green (retro-desk theme). Maskable variant is full-bleed with a 20% safe zone.
 const fs = require("node:fs");
 const path = require("node:path");
 const zlib = require("node:zlib");
 
-const ACCENT = [0xb5, 0x55, 0x2b];
-const WHITE = [0xff, 0xff, 0xff];
-const LINE = [0xe8, 0xc9, 0xb8];
+const ACCENT = [0x23, 0x66, 0x3e]; // title green
+const WHITE = [0xfb, 0xf5, 0xe6]; // cream paper
+const LINE = [0x9f, 0xc8, 0xa9];
 
 // Coverage-based shape test in unit coordinates (0..1). Returns color or null.
 function sample(x, y, { rounded, scale }) {

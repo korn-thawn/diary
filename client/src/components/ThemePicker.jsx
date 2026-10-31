@@ -24,7 +24,7 @@ export default function ThemePicker() {
           aria-checked={pref === value}
           onClick={() => choose(value)}
           className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm transition ${
-            pref === value ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            pref === value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
           }`}
         >
           <Icon className="size-4" aria-hidden="true" />

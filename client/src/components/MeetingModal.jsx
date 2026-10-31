@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { TrashIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { TrashIcon } from "@heroicons/react/20/solid";
+import { UsersIcon } from "@heroicons/react/24/outline";
+import Dialog from "./ui/Dialog";
 import { api, today } from "../api";
 import { isoWeekday, MEETING_REPEATS, REMIND_OPTIONS, WEEKDAYS } from "../palette";
 import { ColorPicker } from "./Pickers";
@@ -36,9 +38,6 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
 
   useEffect(() => {
     api("/boards/labels").then((d) => setLabels(d.labels)).catch(() => {});
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const weekly = form.repeat === "weekly" || form.repeat === "biweekly";
@@ -95,17 +94,11 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
     }
   }
 
-  const chip = (on) => `rounded-lg px-2.5 py-1.5 text-xs transition ${on ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`;
+  const chip = (on) => `rounded-lg px-2.5 py-1.5 text-xs transition ${on ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-10" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form onSubmit={save} className="w-full max-w-lg space-y-4 rounded-2xl bg-surface p-5 shadow-xl" role="dialog" aria-modal="true" aria-label={meeting ? "แก้การประชุม" : "เพิ่มการประชุม"}>
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-lg font-semibold">{meeting ? "แก้การประชุม (ทุกครั้ง)" : "เพิ่มการประชุม"}</h2>
-          <button type="button" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100" onClick={onClose} aria-label="ปิด">
-            <XMarkIcon className="size-5" />
-          </button>
-        </div>
+    <Dialog title={meeting ? "แก้การประชุม (ทุกครั้ง)" : "เพิ่มการประชุม"} icon={UsersIcon} onClose={onClose}>
+      <form onSubmit={save} className="space-y-4">
 
         <input className="input" placeholder="หัวข้อ เช่น Standup, คุยลูกค้า" value={form.title} onChange={set("title")} maxLength={150} required autoFocus={!meeting} />
 
@@ -145,7 +138,7 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
           {weekly && (
             <div className="flex gap-1" role="group" aria-label="วันในสัปดาห์">
               {WEEKDAYS.map((d) => (
-                <button key={d.value} type="button" aria-pressed={days.includes(d.value)} title={d.label} className={`size-9 rounded-full text-xs transition ${days.includes(d.value) ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`} onClick={() => toggleDay(d.value)}>
+                <button key={d.value} type="button" aria-pressed={days.includes(d.value)} title={d.label} className={`size-9 rounded-full text-xs transition ${days.includes(d.value) ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`} onClick={() => toggleDay(d.value)}>
                   {d.short}
                 </button>
               ))}
@@ -193,7 +186,7 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
         <div className="flex items-center justify-between gap-2">
           <div>
             {meeting && (
-              <button type="button" className="btn px-2 text-sm text-red-600 hover:bg-red-50" onClick={remove}>
+              <button type="button" className="btn btn-danger px-2 text-sm" onClick={remove}>
                 <TrashIcon className="size-4" aria-hidden="true" /> ลบทุกครั้ง
               </button>
             )}
@@ -204,6 +197,6 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
           </div>
         </div>
       </form>
-    </div>
+    </Dialog>
   );
 }

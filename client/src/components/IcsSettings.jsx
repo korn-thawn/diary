@@ -60,7 +60,7 @@ export default function IcsSettings({ onAuthError }) {
     <div className="space-y-4">
       <div className="flex gap-2">
         <input id="ics-url" className="input font-mono text-xs" value={state.url} readOnly onFocus={(e) => e.target.select()} aria-label="ลิงก์ปฏิทิน" />
-        <button className="btn btn-ghost shrink-0 px-3 ring-1 ring-stone-300" onClick={copy} aria-label="คัดลอกลิงก์">
+        <button className="btn btn-outline shrink-0 px-3" onClick={copy} aria-label="คัดลอกลิงก์">
           {copied ? <CheckIcon className="size-4 text-emerald-700" /> : <ClipboardDocumentIcon className="size-4" />}
           <span className="text-sm">{copied ? "คัดลอกแล้ว" : "คัดลอก"}</span>
         </button>
@@ -96,10 +96,10 @@ export default function IcsSettings({ onAuthError }) {
       </ul>
 
       <div className="flex flex-wrap gap-2">
-        <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => confirm("สร้างลิงก์ใหม่? ลิงก์เดิมจะใช้ไม่ได้ ต้องไปเพิ่มใน Google Calendar ใหม่") && call("POST")}>
+        <button className="btn btn-outline px-2.5 py-1.5 text-sm" onClick={() => confirm("สร้างลิงก์ใหม่? ลิงก์เดิมจะใช้ไม่ได้ ต้องไปเพิ่มใน Google Calendar ใหม่") && call("POST")}>
           <ArrowPathIcon className="size-4" aria-hidden="true" /> สร้างลิงก์ใหม่
         </button>
-        <button className="btn px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50" onClick={() => confirm("ปิดลิงก์ปฏิทิน? ปฏิทินใน Google จะหยุดอัปเดต") && call("DELETE")}>
+        <button className="btn btn-danger px-2.5 py-1.5 text-sm" onClick={() => confirm("ปิดลิงก์ปฏิทิน? ปฏิทินใน Google จะหยุดอัปเดต") && call("DELETE")}>
           <XCircleIcon className="size-4" aria-hidden="true" /> ปิดลิงก์
         </button>
       </div>

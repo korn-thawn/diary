@@ -261,7 +261,7 @@ export default function PhotoManager({ target, photos, onPhotosChange, onError, 
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          className="btn btn-ghost px-3 py-1.5 text-sm ring-1 ring-stone-300"
+          className="btn btn-outline px-3 py-1.5 text-sm"
           onClick={() => inputRef.current?.click()}
           disabled={count >= MAX_PHOTOS}
         >

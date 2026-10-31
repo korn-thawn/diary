@@ -29,8 +29,9 @@ export default function AuthForm({ title, submitLabel, onSubmit, footer, minPass
   }
 
   return (
-    <div className="mx-auto mt-10 max-w-sm rounded-2xl bg-surface p-8 shadow-sm ring-1 ring-stone-200">
-      <h1 className="mb-6 font-serif text-2xl font-semibold">{title}</h1>
+    <div className="win mx-auto max-w-sm overflow-hidden">
+      <h1 className="win-title py-1 leading-normal">{title}</h1>
+      <div className="p-5 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">
           <span className="mb-1 block text-sm text-stone-600">ชื่อผู้ใช้</span>
@@ -56,11 +57,12 @@ export default function AuthForm({ title, submitLabel, onSubmit, footer, minPass
           />
         </label>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <button className="btn btn-primary w-full" disabled={busy}>
+        <button className="btn btn-primary min-h-11 w-full" disabled={busy}>
           {busy ? "กำลังดำเนินการ…" : submitLabel}
         </button>
       </form>
       {footer && <div className="mt-6 text-center text-sm text-stone-500">{footer}</div>}
+      </div>
     </div>
   );
 }

@@ -102,10 +102,10 @@ export default function TelegramSettings({ onAuthError }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm">เชื่อมกับ <b>@{st.bot}</b> แล้ว</p>
           <div className="flex gap-2">
-            <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => run(async () => { await api("/telegram/test", { method: "POST" }); setMsg({ ok: true, text: "ส่งข้อความทดสอบแล้ว ลองเช็กใน Telegram" }); })}>
+            <button className="btn btn-outline px-2.5 py-1.5 text-sm" onClick={() => run(async () => { await api("/telegram/test", { method: "POST" }); setMsg({ ok: true, text: "ส่งข้อความทดสอบแล้ว ลองเช็กใน Telegram" }); })}>
               <PaperAirplaneIcon className="size-4" aria-hidden="true" /> ส่งข้อความทดสอบ
             </button>
-            <button className="btn px-2.5 py-1.5 text-sm text-red-600 hover:bg-red-50" onClick={() => confirm("เลิกเชื่อม Telegram?") && run(async () => setSt(await api("/telegram/link", { method: "DELETE" })))}>
+            <button className="btn btn-danger px-2.5 py-1.5 text-sm" onClick={() => confirm("เลิกเชื่อม Telegram?") && run(async () => setSt(await api("/telegram/link", { method: "DELETE" })))}>
               <LinkSlashIcon className="size-4" aria-hidden="true" /> เลิกเชื่อม
             </button>
           </div>
@@ -129,7 +129,7 @@ export default function TelegramSettings({ onAuthError }) {
                   type="button"
                   aria-pressed={on}
                   onClick={() => save({ event_days: on ? s.event_days.filter((x) => x !== d) : [...s.event_days, d] })}
-                  className={`rounded-lg px-2 py-1 text-xs transition ${on ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+                  className={`rounded-lg px-2 py-1 text-xs transition ${on ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`}
                 >
                   {d === 1 ? "1 วัน" : `${d} วัน`}
                 </button>

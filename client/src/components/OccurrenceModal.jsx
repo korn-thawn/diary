@@ -17,6 +17,8 @@ import {
 import { api, formatDate, today } from "../api";
 import { color, repeatText } from "../palette";
 import MeetingModal, { meetingsChanged } from "./MeetingModal";
+import Dialog from "./ui/Dialog";
+import { UsersIcon } from "@heroicons/react/24/outline";
 
 function CardPicker({ onPick, onCancel }) {
   const [boards, setBoards] = useState([]);
@@ -87,11 +89,6 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
     api(`/meetings/${meetingId}/occurrences/${date}/notes`, { method: "PUT", body: { notes } }).then(() => { setStatus("บันทึกแล้ว"); meetingsChanged(); }).catch((e) => setError(e.message));
   };
   const close = () => { flush(); onClose(); };
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && !editing && close();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  });
 
   function onNotes(v) {
     setNotes(v);
@@ -123,15 +120,14 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
   const cancelled = occ?.cancelled;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-10" onPointerDown={(e) => e.target === e.currentTarget && close()}>
-      <div className="w-full max-w-xl rounded-2xl bg-surface shadow-xl" role="dialog" aria-modal="true" aria-label="การประชุม">
+    <Dialog title="การประชุม" icon={UsersIcon} onClose={close} size="lg">
         {!data ? (
-          <div className="p-6">
+          <div className="py-4">
             <p className="text-center text-stone-500">{error || "กำลังโหลด…"}</p>
             {error && <div className="mt-3 text-center"><button className="btn btn-ghost" onClick={onClose}>ปิด</button></div>}
           </div>
         ) : (
-          <div className="space-y-5 p-5">
+          <div className="space-y-5">
             <div className="flex items-start gap-3">
               <span className={`mt-1.5 h-8 w-1.5 shrink-0 rounded ${color(m.color).bar}`} aria-hidden="true" />
               <div className="min-w-0 flex-1">
@@ -151,9 +147,6 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
                   <ArrowPathIcon className="size-3.5" aria-hidden="true" /> {repeatText(m)}
                 </p>
               </div>
-              <button className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100" onClick={close} aria-label="ปิด">
-                <XMarkIcon className="size-5" />
-              </button>
             </div>
 
             {occ?.conflicts?.length > 0 && !cancelled && (
@@ -187,21 +180,21 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
             <section className="space-y-2">
               <div className="flex flex-wrap gap-2 text-sm">
                 {!cancelled && (
-                  <button className="btn btn-ghost px-2.5 py-1.5 ring-1 ring-stone-300" onClick={() => setMoving({ new_date: occ?.date || date, new_start: occ?.start || m.start_time, new_end: occ?.end || m.end_time })}>
+                  <button className="btn btn-outline px-2.5 py-1.5" onClick={() => setMoving({ new_date: occ?.date || date, new_start: occ?.start || m.start_time, new_end: occ?.end || m.end_time })}>
                     <CalendarDaysIcon className="size-4" aria-hidden="true" /> เลื่อนครั้งนี้
                   </button>
                 )}
                 {!cancelled && (
-                  <button className="btn px-2.5 py-1.5 text-red-600 hover:bg-red-50" onClick={() => confirm("ยกเลิกการประชุมครั้งนี้ (ครั้งอื่นไม่เปลี่ยน)?") && act(() => api(`/meetings/${m.id}/occurrences/${date}`, { method: "PUT", body: { cancelled: true } }))}>
+                  <button className="btn btn-danger px-2.5 py-1.5" onClick={() => confirm("ยกเลิกการประชุมครั้งนี้ (ครั้งอื่นไม่เปลี่ยน)?") && act(() => api(`/meetings/${m.id}/occurrences/${date}`, { method: "PUT", body: { cancelled: true } }))}>
                     <XCircleIcon className="size-4" aria-hidden="true" /> ยกเลิกครั้งนี้
                   </button>
                 )}
                 {(cancelled || occ?.moved) && (
-                  <button className="btn btn-ghost px-2.5 py-1.5 ring-1 ring-stone-300" onClick={() => act(() => api(`/meetings/${m.id}/occurrences/${date}`, { method: "DELETE" }))}>
+                  <button className="btn btn-outline px-2.5 py-1.5" onClick={() => act(() => api(`/meetings/${m.id}/occurrences/${date}`, { method: "DELETE" }))}>
                     <ArrowUturnLeftIcon className="size-4" aria-hidden="true" /> คืนค่าเดิม
                   </button>
                 )}
-                <button className="btn btn-ghost px-2.5 py-1.5 ring-1 ring-stone-300" onClick={() => setEditing(true)}>
+                <button className="btn btn-outline px-2.5 py-1.5" onClick={() => setEditing(true)}>
                   <PencilSquareIcon className="size-4" aria-hidden="true" /> แก้ทุกครั้ง
                 </button>
               </div>
@@ -271,14 +264,13 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
                 onSubmit={(e) => { e.preventDefault(); if (newAction.trim()) act(() => api(`/meetings/${m.id}/occurrences/${date}/actions`, { method: "POST", body: { text: newAction } })).then((ok) => ok && setNewAction("")); }}
               >
                 <input className="input py-1.5 text-sm" placeholder="เพิ่ม action item แล้วกด Enter" value={newAction} maxLength={300} onChange={(e) => setNewAction(e.target.value)} />
-                <button className="btn btn-ghost px-3 py-1.5 ring-1 ring-stone-300" aria-label="เพิ่ม action item"><PlusIcon className="size-4" /></button>
+                <button className="btn btn-outline px-3 py-1.5" aria-label="เพิ่ม action item"><PlusIcon className="size-4" /></button>
               </form>
             </section>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         )}
-      </div>
       {editing && m && (
         <MeetingModal
           meeting={m}
@@ -288,6 +280,6 @@ export default function OccurrenceModal({ meetingId, date, onClose }) {
           onError={(e) => setError(e.message)}
         />
       )}
-    </div>
+    </Dialog>
   );
 }

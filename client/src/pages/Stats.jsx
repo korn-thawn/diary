@@ -66,7 +66,7 @@ export default function Stats() {
 
 function Tile({ icon: Icon, label, value, unit, sub, accent }) {
   return (
-    <div className="rounded-xl bg-surface p-4 shadow-sm ring-1 ring-stone-200">
+    <div className="panel p-4">
       <div className="flex items-center gap-1.5 text-xs text-stone-500">
         <Icon className={`size-4 ${accent ? "text-accent" : ""}`} aria-hidden="true" />
         {label}
@@ -82,7 +82,7 @@ function Tile({ icon: Icon, label, value, unit, sub, accent }) {
 
 function Card({ title, sub, children }) {
   return (
-    <section className="rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-stone-200">
+    <section className="panel p-5">
       <h2 className="font-serif text-lg font-semibold">{title}</h2>
       {sub && <p className="text-xs text-stone-500">{sub}</p>}
       <div className="mt-4">{children}</div>

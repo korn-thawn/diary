@@ -52,7 +52,7 @@ export function IconPicker({ value, onChange }) {
           title={label}
           onClick={() => onChange(k)}
           className={`flex aspect-square items-center justify-center rounded-lg transition ${
-            value === k ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            value === k ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
           }`}
         >
           <Icon className="size-5" aria-hidden="true" />

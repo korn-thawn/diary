@@ -82,7 +82,8 @@ app.use(
   express.static(DIST, {
     index: false,
     setHeaders(res, filePath) {
-      if (/\.[0-9a-f]{8,}\.(js|css)$/.test(filePath)) {
+      // everything under /assets/ has a content hash in its name (js, css, fonts)
+      if (/[\\/]assets[\\/]/.test(filePath)) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       } else if (/(sw|theme)\.js$|\.webmanifest$/.test(filePath)) {
         // must update as soon as a new version is deployed

@@ -5,6 +5,7 @@ import { api, formatDate, today } from "../api";
 import { useAuth } from "../auth";
 import { color, ICONS } from "../palette";
 import EventModal from "../components/EventModal";
+import { TitleButton, WindowActions } from "../components/ui/Window";
 
 const REPEAT_LABEL = { none: "ครั้งเดียว", monthly: "ทุกเดือน", yearly: "ทุกปี" };
 
@@ -43,15 +44,11 @@ export default function Events() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2">
-        <Link to="/calendar" className="btn btn-ghost px-2" aria-label="กลับไปปฏิทิน">
-          <ChevronLeftIcon className="size-5" />
-        </Link>
-        <h1 className="font-serif text-2xl font-semibold">วันสำคัญ</h1>
-        <button className="btn btn-primary ml-auto" onClick={() => setEditing("new")}>
+      <WindowActions>
+        <TitleButton onClick={() => setEditing("new")}>
           <PlusIcon className="size-4" aria-hidden="true" /> เพิ่ม
-        </button>
-      </div>
+        </TitleButton>
+      </WindowActions>
 
       {events.length === 0 && (
         <p className="mt-12 text-center text-stone-500">ยังไม่มีวันสำคัญ ลองเพิ่มวันเกิด วันครบรอบ หรือวันจ่ายบิลรายเดือน</p>
@@ -60,7 +57,7 @@ export default function Events() {
       <ul className="space-y-2">
         {upcoming.map((e) => (
           <li key={e.id}>
-            <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-surface p-3 text-left shadow-sm ring-1 ring-stone-200 hover:ring-stone-400">
+            <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 panel p-3 text-left hover:border-ink">
               <EventIcon event={e} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{e.title}</p>
@@ -86,7 +83,7 @@ export default function Events() {
           <ul className="space-y-2 opacity-70">
             {past.map((e) => (
               <li key={e.id}>
-                <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-surface p-3 text-left ring-1 ring-stone-200 hover:ring-stone-400">
+                <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 panel p-3 text-left hover:border-ink">
                   <EventIcon event={e} size="size-8" iconSize="size-4" />
                   <span className="min-w-0 flex-1 truncate">{e.title}</span>
                   <span className="text-xs text-stone-500">{formatDate(e.date, { day: "numeric", month: "short", year: "numeric" })}</span>

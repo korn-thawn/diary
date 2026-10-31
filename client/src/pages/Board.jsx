@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import {
   DndContext,
   DragOverlay,
@@ -11,10 +11,10 @@ import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-
 import {
   ArchiveBoxIcon,
   ArrowUturnLeftIcon,
-  ChevronLeftIcon,
   Cog6ToothIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
+  PencilSquareIcon,
   PlusIcon,
   TrashIcon,
   XMarkIcon,
@@ -28,6 +28,8 @@ import KanbanColumn from "../components/KanbanColumn";
 import { CardFace } from "../components/KanbanCard";
 import CardModal from "../components/CardModal";
 import Popover, { MenuItem } from "../components/Popover";
+import Dialog from "../components/ui/Dialog";
+import { useWindowTitle } from "../components/ui/Window";
 import { ColorPicker, IconPicker } from "../components/Pickers";
 
 const cardKey = (id) => `card-${id}`;
@@ -80,9 +82,8 @@ function BoardSettings({ board, onUpdate, onDelete }) {
 function DeleteColumnDialog({ column, others, cardCount, onCancel, onConfirm }) {
   const [moveTo, setMoveTo] = useState(others[0]?.id || "");
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-sm space-y-4 rounded-2xl bg-surface p-5 shadow-xl">
-        <h2 className="font-serif text-lg font-semibold">ลบคอลัมน์ "{column.name}"</h2>
+    <Dialog title={`ลบคอลัมน์ "${column.name}"`} icon={TrashIcon} onClose={onCancel} size="sm">
+      <div className="space-y-4">
         <p className="text-sm text-stone-600">คอลัมน์นี้มี {cardCount} การ์ด จะทำอย่างไรกับการ์ด?</p>
         <label className="block text-sm">
           <span className="mb-1 block text-stone-600">ย้ายการ์ดไปที่</span>
@@ -92,11 +93,11 @@ function DeleteColumnDialog({ column, others, cardCount, onCancel, onConfirm }) 
         </label>
         <div className="flex flex-wrap justify-end gap-2">
           <button className="btn btn-ghost" onClick={onCancel}>ยกเลิก</button>
-          <button className="btn text-red-600 hover:bg-red-50" onClick={() => onConfirm({ deleteCards: true })}>ลบการ์ดทิ้งด้วย</button>
+          <button className="btn btn-danger" onClick={() => onConfirm({ deleteCards: true })}>ลบการ์ดทิ้งด้วย</button>
           <button className="btn btn-primary" onClick={() => onConfirm({ moveTo })}>ย้ายแล้วลบคอลัมน์</button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
 
@@ -156,6 +157,7 @@ export default function Board() {
   }
   useEffect(() => { load(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useWindowTitle(board?.name);
   const labelsById = useMemo(() => Object.fromEntries(labels.map((l) => [l.id, l])), [labels]);
   const filtering = Boolean(filter.q || filter.labelId || filter.due);
   const visible = useMemo(() => {
@@ -334,16 +336,13 @@ export default function Board() {
 
   return (
     <div>
-      <div className="mx-auto mb-4 flex max-w-6xl flex-wrap items-center gap-2">
-        <Link to="/boards" className="btn btn-ghost px-2" aria-label="กลับไปหน้ารายการบอร์ด">
-          <ChevronLeftIcon className="size-5" />
-        </Link>
-        <span className={`flex size-9 items-center justify-center rounded-xl ${color(board.color).soft}`}>
+      <div className="mx-auto mb-4 flex max-w-none flex-wrap items-center gap-2">
+        <span className={`flex size-9 items-center justify-center rounded-[6px] border-[1.5px] border-ink ${color(board.color).soft}`}>
           <Icon className="size-5" aria-hidden="true" />
         </span>
         {editingName ? (
           <input
-            className="input w-auto font-serif text-xl"
+            className="input w-64 font-display text-base"
             defaultValue={board.name}
             maxLength={60}
             autoFocus
@@ -351,11 +350,11 @@ export default function Board() {
             onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); if (e.key === "Escape") setEditingName(false); }}
           />
         ) : (
-          <h1 className="cursor-text font-serif text-xl font-semibold" onClick={() => setEditingName(true)} title="คลิกเพื่อเปลี่ยนชื่อ">
-            {board.name}
-          </h1>
+          <button className="btn btn-ghost px-2 text-sm" onClick={() => setEditingName(true)}>
+            <PencilSquareIcon className="size-4" aria-hidden="true" /> เปลี่ยนชื่อบอร์ด
+          </button>
         )}
-        {board.archived && <span className="rounded-full bg-stone-200 px-2 py-0.5 text-xs text-stone-600">เก็บถาวร</span>}
+        {board.archived && <span className="rounded-[4px] border-[1.5px] border-ink/40 bg-highlight px-2 py-0.5 text-xs text-on-highlight">เก็บถาวร</span>}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <div className="relative">
             <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
@@ -370,7 +369,7 @@ export default function Board() {
           </div>
           <Popover
             button={({ toggle }) => (
-              <button className={`btn px-2.5 py-1.5 text-sm ${filtering && !filter.q ? "bg-ink text-paper" : "btn-ghost"}`} onClick={toggle}>
+              <button className={`btn px-2.5 py-1.5 text-sm ${filtering && !filter.q ? "btn-primary" : "btn-outline"}`} onClick={toggle}>
                 <FunnelIcon className="size-4" aria-hidden="true" />
                 กรอง
               </button>
@@ -399,7 +398,7 @@ export default function Board() {
       </div>
 
       {filtering && (
-        <div className="mx-auto mb-3 flex max-w-6xl items-center gap-2 text-sm text-stone-600">
+        <div className="mx-auto mb-3 flex max-w-none items-center gap-2 text-sm text-stone-600">
           <span>กำลังกรองอยู่ ลากการ์ดไม่ได้ระหว่างกรอง</span>
           <button className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-xs" onClick={() => setFilter({ q: "", labelId: "", due: "" })}>
             ล้างตัวกรอง <XMarkIcon className="size-3.5" aria-hidden="true" />
@@ -432,7 +431,7 @@ export default function Board() {
             ))}
           </SortableContext>
           <button
-            className="flex h-12 w-60 shrink-0 items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-stone-300 text-sm text-stone-500 hover:border-stone-400 hover:text-stone-700"
+            className="flex h-12 w-60 shrink-0 items-center justify-center gap-1 rounded-[6px] border-2 border-dashed border-ink/40 font-display text-sm font-semibold text-ink/70 hover:border-ink hover:text-ink"
             onClick={addColumn}
           >
             <PlusIcon className="size-4" aria-hidden="true" />
@@ -443,11 +442,11 @@ export default function Board() {
           {activeCard ? (
             <div className="w-68"><CardFace card={activeCard} {...face} done={activeCardDone} dragging /></div>
           ) : active?.type === "column" ? (
-            <div className="w-72 rounded-2xl bg-stone-200 px-3 py-3 text-sm font-semibold shadow-lg">{active.column.name}</div>
+            <div className="win w-72 rotate-1 px-3 py-3 font-display text-sm font-semibold">{active.column.name}</div>
           ) : null}
         </DragOverlay>
       </DndContext>
-      <p className="mx-auto max-w-6xl text-xs text-stone-400">
+      <p className="mx-auto max-w-none text-xs text-stone-400">
         ลากการ์ดเพื่อย้าย · ลากจุดสีหรือชื่อคอลัมน์เพื่อเรียงคอลัมน์ · มือถือ: แตะค้างแล้วลาก · คีย์บอร์ด: Space เพื่อหยิบ/วาง
       </p>
 
@@ -473,7 +472,7 @@ export default function Board() {
       )}
 
       {toast && (
-        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-ink px-4 py-2 text-sm text-paper shadow-lg" role="status">
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-[6px] border-2 border-ink bg-highlight px-4 py-2 text-sm text-on-highlight shadow-[3px_3px_0_var(--color-shadow)]" role="status">
           {toast}
         </div>
       )}

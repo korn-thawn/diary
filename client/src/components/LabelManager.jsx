@@ -77,7 +77,7 @@ export default function LabelManager({ onAuthError }) {
       </ul>
       <form onSubmit={add} className="flex gap-2">
         <input className="input py-1.5 text-sm" placeholder="ป้ายใหม่" value={name} maxLength={30} onChange={(e) => setName(e.target.value)} required />
-        <button className="btn btn-ghost px-3 ring-1 ring-stone-300" aria-label="เพิ่มป้าย"><PlusIcon className="size-4" /></button>
+        <button className="btn btn-outline px-3" aria-label="เพิ่มป้าย"><PlusIcon className="size-4" /></button>
       </form>
       {msg && <p className="text-sm text-red-600">{msg}</p>}
     </div>

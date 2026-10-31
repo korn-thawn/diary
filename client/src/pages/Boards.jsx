@@ -8,6 +8,7 @@ import { api, today } from "../api";
 import { useAuth } from "../auth";
 import { boardIcon, color } from "../palette";
 import { ColorPicker, IconPicker } from "../components/Pickers";
+import { TitleButton, WindowActions } from "../components/ui/Window";
 
 export function useDndSensors() {
   return useSensors(
@@ -29,6 +30,20 @@ export function useJustDragged() {
   return fn;
 }
 
+// Desktop-style folder icon (colour = board colour, board icon on the front)
+function FolderGlyph({ colorClass, Icon }) {
+  return (
+    <span className={`relative block h-14 w-[4.5rem] ${colorClass}`} aria-hidden="true">
+      <svg viewBox="0 0 72 56" className="absolute inset-0 size-full" fill="none">
+        <path d="M3 10a4 4 0 0 1 4-4h18l6 6h34a4 4 0 0 1 4 4v34a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" stroke="var(--color-ink)" strokeWidth="2.5" />
+        <path d="M3 20h66v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" stroke="var(--color-ink)" strokeWidth="2.5" />
+        <path d="M3 20h66v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="#ffffff" fillOpacity=".2" />
+      </svg>
+      <Icon className="absolute top-[47%] left-1/2 size-6 -translate-x-1/2 text-white" />
+    </span>
+  );
+}
+
 function BoardTile({ board, justDragged }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: board.id });
   const Icon = boardIcon(board.icon);
@@ -43,26 +58,19 @@ function BoardTile({ board, justDragged }) {
     >
       <Link
         to={`/boards/${board.id}`}
+        viewTransition
         onClick={(e) => justDragged() && e.preventDefault()}
-        className="block h-full rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-stone-400"
+        className="group flex flex-col items-center gap-1.5 rounded-[6px] px-1 py-3 text-center outline-none focus-visible:bg-highlight/60"
       >
-        <div className="flex items-start gap-3">
-          <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${c.soft}`}>
-            <Icon className="size-5" aria-hidden="true" />
+        <FolderGlyph colorClass={c.text} Icon={Icon} />
+        <span className="line-clamp-2 rounded-[3px] px-1 font-display text-sm leading-snug font-semibold group-hover:bg-highlight group-hover:text-on-highlight">{board.name}</span>
+        <span className="text-xs text-stone-500">{board.open_count ? `ค้าง ${board.open_count} งาน` : "ไม่มีงานค้าง"}</span>
+        {board.overdue_count > 0 && (
+          <span className="flex items-center gap-1 text-xs font-medium text-red-700">
+            <ExclamationCircleIcon className="size-3.5" aria-hidden="true" />
+            เลยกำหนด {board.overdue_count}
           </span>
-          <div className="min-w-0">
-            <h2 className="truncate font-serif text-lg font-semibold">{board.name}</h2>
-            <p className="text-sm text-stone-500">
-              {board.open_count ? `ค้าง ${board.open_count} งาน` : "ไม่มีงานค้าง"}
-            </p>
-            {board.overdue_count > 0 && (
-              <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-red-700">
-                <ExclamationCircleIcon className="size-3.5" aria-hidden="true" />
-                เลยกำหนด {board.overdue_count}
-              </p>
-            )}
-          </div>
-        </div>
+        )}
       </Link>
     </li>
   );
@@ -89,7 +97,7 @@ function NewBoardForm({ onCreated, onCancel }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-stone-200">
+    <form onSubmit={submit} className="space-y-4 panel p-5">
       <h2 className="font-serif text-lg font-semibold">บอร์ดใหม่</h2>
       <input className="input" placeholder="ชื่อบอร์ด เช่น งานบ้าน, ทริปญี่ปุ่น" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required autoFocus />
       <div>
@@ -149,15 +157,14 @@ export default function Boards() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-serif text-2xl font-semibold">บอร์ดงาน</h1>
-        {!creating && (
-          <button className="btn btn-primary" onClick={() => setCreating(true)}>
+      {!creating && (
+        <WindowActions>
+          <TitleButton onClick={() => setCreating(true)}>
             <PlusIcon className="size-4" aria-hidden="true" />
             บอร์ดใหม่
-          </button>
-        )}
-      </div>
+          </TitleButton>
+        </WindowActions>
+      )}
 
       {creating && (
         <NewBoardForm onCancel={() => setCreating(false)} onCreated={(b) => navigate(`/boards/${b.id}`)} />
@@ -165,7 +172,7 @@ export default function Boards() {
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => { justDragged.mark(); onDragEnd(e); }}>
         <SortableContext items={active.map((b) => b.id)} strategy={rectSortingStrategy}>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
             {active.map((b) => (
               <BoardTile key={b.id} board={b} justDragged={justDragged} />
             ))}
@@ -186,7 +193,7 @@ export default function Boards() {
                 const Icon = boardIcon(b.icon);
                 return (
                   <li key={b.id}>
-                    <Link to={`/boards/${b.id}`} className="flex items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-stone-200 hover:ring-stone-400">
+                    <Link to={`/boards/${b.id}`} className="flex items-center gap-3 panel p-3 hover:border-ink">
                       <span className={`flex size-8 items-center justify-center rounded-lg ${color(b.color).soft}`}>
                         <Icon className="size-4" aria-hidden="true" />
                       </span>

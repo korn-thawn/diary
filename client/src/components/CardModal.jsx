@@ -21,6 +21,8 @@ import { useDndSensors } from "../pages/Boards";
 import { ColorPicker } from "./Pickers";
 import PhotoManager from "./Photos";
 import LabelPicker from "./LabelPicker";
+import Dialog from "./ui/Dialog";
+import { Squares2X2Icon } from "@heroicons/react/24/outline";
 
 // Fields the board view needs to redraw a card face
 const faceOf = (card, items) => ({
@@ -106,11 +108,6 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
     return () => { cancelled = true; };
   }, [cardId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && close();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  });
 
   async function patch(fields) {
     setStatus("saving");
@@ -217,19 +214,21 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
   const doneCount = items.filter((i) => i.done).length;
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-12"
-      onPointerDown={(e) => e.target === e.currentTarget && close()}
+    <Dialog
+      title="การ์ดงาน"
+      icon={Squares2X2Icon}
+      onClose={close}
+      size="lg"
+      titleExtra={<span className="text-xs font-medium text-on-title/80" role="status">{status === "saving" ? "กำลังบันทึก…" : status === "saved" ? "บันทึกแล้ว" : ""}</span>}
     >
-      <div className="w-full max-w-xl rounded-2xl bg-surface shadow-xl" role="dialog" aria-modal="true" aria-label="รายละเอียดการ์ด">
         {!card ? (
           <p className="p-8 text-center text-stone-500">กำลังโหลด…</p>
         ) : (
-          <div className="space-y-5 p-5">
+          <div className="space-y-5">
             <div className="flex items-start gap-2">
               {card.color && <span className={`mt-2 h-6 w-1.5 shrink-0 rounded ${color(card.color).bar}`} aria-hidden="true" />}
               <textarea
-                className="min-h-0 flex-1 resize-none rounded-lg border-0 px-1 py-1 font-serif text-xl font-semibold outline-none focus:ring-2 focus:ring-accent/30"
+                className="input min-h-0 flex-1 resize-none font-display text-xl font-semibold"
                 rows={Math.min(4, Math.ceil(card.title.length / 40) || 1)}
                 defaultValue={card.title}
                 key={card.updated_at}
@@ -242,12 +241,6 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                   else e.target.value = card.title;
                 }}
               />
-              <span className="mt-2 w-16 shrink-0 text-right text-xs text-stone-400" role="status">
-                {status === "saving" ? "กำลังบันทึก" : status === "saved" ? "บันทึกแล้ว" : ""}
-              </span>
-              <button className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100" onClick={close} aria-label="ปิด">
-                <XMarkIcon className="size-5" />
-              </button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -274,7 +267,7 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                       aria-checked={card.priority === p.value}
                       onClick={() => patch({ priority: p.value })}
                       className={`flex-1 rounded-lg px-2 py-1.5 text-xs transition ${
-                        card.priority === p.value ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        card.priority === p.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
                       }`}
                     >
                       {p.label}
@@ -295,7 +288,7 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                     disabled={!card.due_date && r.value !== null}
                     onClick={() => patch({ recurrence: r.value })}
                     className={`rounded-lg px-2.5 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                      card.recurrence === r.value ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      card.recurrence === r.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
                     }`}
                   >
                     {r.label}
@@ -369,21 +362,20 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
               </DndContext>
               <form onSubmit={addItem} className="mt-2 flex gap-2">
                 <input className="input py-1.5 text-sm" placeholder="เพิ่มรายการ แล้วกด Enter" value={newItem} maxLength={300} onChange={(e) => setNewItem(e.target.value)} />
-                <button className="btn btn-ghost px-3 py-1.5 ring-1 ring-stone-300" aria-label="เพิ่มรายการ">
+                <button className="btn btn-outline px-3 py-1.5" aria-label="เพิ่มรายการ">
                   <PlusIcon className="size-4" />
                 </button>
               </form>
             </Section>
 
-            <div className="flex items-center justify-between border-t border-stone-100 pt-4 text-xs text-stone-400">
+            <div className="flex items-center justify-between border-t-[1.5px] border-ink/15 pt-4 text-xs text-stone-400">
               <span>สร้างเมื่อ {new Date(card.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}</span>
-              <button className="btn px-2 py-1 text-sm text-red-600 hover:bg-red-50" onClick={deleteCard}>
+              <button className="btn btn-danger px-2 py-1 text-sm" onClick={deleteCard}>
                 <TrashIcon className="size-4" aria-hidden="true" /> ลบการ์ด
               </button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </Dialog>
   );
 }

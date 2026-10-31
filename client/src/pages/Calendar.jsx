@@ -45,7 +45,7 @@ function Upcoming({ data, onOpenEvent }) {
   if (!data) return null;
   const total = data.overdue.length + data.items.length;
   return (
-    <section className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-5">
+    <section className="panel p-4 sm:p-5">
       <button className="flex w-full items-center justify-between" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <h2 className="font-serif text-lg font-semibold">ใกล้ถึง <span className="text-sm font-normal text-stone-500">14 วัน</span></h2>
         <span className="text-xs text-stone-500">{total ? `${total} รายการ` : "ไม่มี"} · {open ? "ซ่อน" : "แสดง"}</span>
@@ -163,7 +163,7 @@ export default function Calendar() {
     <div className="space-y-5">
       <Upcoming data={upcoming} onOpenEvent={openEvent} />
 
-      <section className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-6">
+      <section className="panel p-4 sm:p-6">
         <div className="mb-3 flex items-center justify-between gap-2">
           <button className="btn btn-ghost px-2" onClick={() => goMonth(addMonths(month, -1))} aria-label="เดือนก่อน">
             <ChevronLeftIcon className="size-5" />
@@ -187,7 +187,7 @@ export default function Calendar() {
               key={l.key}
               aria-pressed={layers[l.key]}
               onClick={() => setLayers((s) => ({ ...s, [l.key]: !s[l.key] }))}
-              className={`rounded-full px-3 py-1 transition ${layers[l.key] ? "bg-ink text-paper" : "bg-stone-100 text-stone-500"}`}
+              className="chip"
             >
               {l.label}
             </button>
@@ -234,7 +234,7 @@ export default function Calendar() {
                         aria-pressed={isSel}
                         title={label}
                         className={`flex aspect-square w-full flex-col items-center justify-start gap-0.5 rounded-lg pt-1 text-sm transition sm:pt-1.5 ${
-                          isSel ? "bg-ink text-paper" : d ? "bg-stone-100 hover:bg-stone-200" : "hover:bg-stone-100"
+                          isSel ? "border-2 border-ink bg-title text-on-title" : d ? "border-[1.5px] border-ink/25 bg-surface hover:border-ink" : "border-[1.5px] border-transparent hover:border-ink/25"
                         } ${isToday && !isSel ? "ring-2 ring-accent" : ""}`}
                       >
                         <span className={isToday && !isSel ? "font-semibold text-accent" : ""}>{Number(date.slice(8))}</span>
@@ -275,16 +275,16 @@ export default function Calendar() {
       </section>
 
       {day && (
-        <section className="space-y-4 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-5" aria-live="polite">
+        <section className="space-y-4 panel p-4 sm:p-5" aria-live="polite">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-serif text-lg font-semibold">
               {formatDate(selected, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
             </h2>
             <div className="flex gap-2">
-              <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => setEditing({ defaultDate: selected })}>
+              <button className="btn btn-outline px-2.5 py-1.5 text-sm" onClick={() => setEditing({ defaultDate: selected })}>
                 <StarIcon className="size-4" aria-hidden="true" /> เพิ่มวันสำคัญ
               </button>
-              <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => setAddingMeeting(true)}>
+              <button className="btn btn-outline px-2.5 py-1.5 text-sm" onClick={() => setAddingMeeting(true)}>
                 <UsersIcon className="size-4" aria-hidden="true" /> เพิ่มประชุม
               </button>
               <button className="btn btn-primary px-2.5 py-1.5 text-sm" onClick={() => navigate(`/entries/new?date=${selected}`)}>

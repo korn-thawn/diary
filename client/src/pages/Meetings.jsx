@@ -6,6 +6,7 @@ import { useAuth } from "../auth";
 import { color, repeatText } from "../palette";
 import { countdown } from "./Events";
 import MeetingModal from "../components/MeetingModal";
+import { TitleButton, WindowActions } from "../components/ui/Window";
 
 export default function Meetings() {
   const { setUser } = useAuth();
@@ -37,7 +38,7 @@ export default function Meetings() {
 
   const Row = ({ m }) => (
     <li>
-      <div className="flex items-center gap-3 rounded-xl bg-surface p-3 shadow-sm ring-1 ring-stone-200">
+      <div className="flex items-center gap-3 panel p-3">
         <span className={`h-10 w-1.5 shrink-0 rounded ${color(m.color).bar}`} aria-hidden="true" />
         <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(m)}>
           <p className="truncate font-medium">{m.title}</p>
@@ -71,13 +72,11 @@ export default function Meetings() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2">
-        <Link to="/today" className="btn btn-ghost px-2" aria-label="กลับไปหน้าวันนี้"><ChevronLeftIcon className="size-5" /></Link>
-        <h1 className="font-serif text-2xl font-semibold">การประชุม</h1>
-        <button className="btn btn-primary ml-auto" onClick={() => setEditing("new")}>
+      <WindowActions>
+        <TitleButton onClick={() => setEditing("new")}>
           <PlusIcon className="size-4" aria-hidden="true" /> เพิ่ม
-        </button>
-      </div>
+        </TitleButton>
+      </WindowActions>
       {meetings.length === 0 && <p className="mt-12 text-center text-stone-500">ยังไม่มีการประชุม ลองเพิ่ม Standup ทุกวันทำงาน หรือประชุมทีมทุกสัปดาห์</p>}
       <ul className="space-y-2">{upcoming.map((m) => <Row key={m.id} m={m} />)}</ul>
       {ended.length > 0 && (

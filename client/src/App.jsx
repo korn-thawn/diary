@@ -1,15 +1,8 @@
-import { Link, Navigate, NavLink, Route, Routes, useLocation, useSearchParams } from "react-router";
+import { Navigate, Route, Routes, useLocation, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
-import { BookOpenIcon, ExclamationTriangleIcon, SignalSlashIcon } from "@heroicons/react/24/outline";
-import {
-  CalendarDaysIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
-  ListBulletIcon,
-  Squares2X2Icon,
-  SunIcon,
-} from "@heroicons/react/20/solid";
+import { ExclamationTriangleIcon, SignalSlashIcon } from "@heroicons/react/20/solid";
 import { useAuth } from "./auth";
+import { windowFor } from "./routes";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import EntryList from "./pages/EntryList";
@@ -23,6 +16,8 @@ import Events from "./pages/Events";
 import Today from "./pages/Today";
 import Meetings from "./pages/Meetings";
 import OccurrenceModal from "./components/OccurrenceModal";
+import Window from "./components/ui/Window";
+import { Dock, FolderTabs, MenuBar } from "./components/ui/Chrome";
 
 // Shown while the device is offline (the installed app can still open its cached shell)
 function OfflineBanner() {
@@ -35,7 +30,7 @@ function OfflineBanner() {
   }, []);
   if (online) return null;
   return (
-    <div className="flex items-center justify-center gap-2 bg-stone-700 px-4 py-2 text-center text-sm text-stone-100" role="status">
+    <div className="flex items-center justify-center gap-2 border-b-2 border-ink bg-ink px-4 py-1.5 text-center text-sm text-paper" role="status">
       <SignalSlashIcon className="size-4 shrink-0" aria-hidden="true" />
       ออฟไลน์อยู่ ข้อมูลจะโหลดและบันทึกได้เมื่อกลับมาออนไลน์
     </div>
@@ -47,9 +42,9 @@ function InsecureBanner() {
   const local = hostname === "localhost" || hostname === "127.0.0.1";
   if (protocol !== "http:" || local) return null;
   return (
-    <div className="flex items-center justify-center gap-2 bg-amber-100 px-4 py-2 text-center text-sm text-amber-900">
+    <div className="flex items-center justify-center gap-2 border-b-2 border-ink bg-highlight px-4 py-1.5 text-center text-sm text-on-highlight">
       <ExclamationTriangleIcon className="size-4 shrink-0" aria-hidden="true" />
-      เว็บนี้ยังไม่มี HTTPS ใช้รหัสผ่านทิ้งสำหรับทดสอบเท่านั้น อย่าใช้รหัสจริง
+      เว็บนี้ยังไม่มี HTTPS ใช้รหัสผ่านทิ้งสำหรับทดสอบเท่านั้น
     </div>
   );
 }
@@ -60,49 +55,6 @@ function RequireAuth({ children }) {
   if (user === undefined) return <p className="p-8 text-center text-stone-500">กำลังโหลด…</p>;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   return children;
-}
-
-const NAV = [
-  { to: "/today", label: "วันนี้", icon: SunIcon },
-  { to: "/", label: "บันทึก", icon: ListBulletIcon, end: true },
-  { to: "/boards", label: "งาน", icon: Squares2X2Icon },
-  { to: "/calendar", label: "ปฏิทิน", icon: CalendarDaysIcon },
-  { to: "/stats", label: "สถิติ", icon: ChartBarIcon },
-  { to: "/settings", label: "ตั้งค่า", icon: Cog6ToothIcon },
-];
-
-function Header() {
-  const { user } = useAuth();
-  return (
-    <header className="mx-auto max-w-3xl px-4 pt-5 pb-4">
-      <div className="flex items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-tight">
-          <BookOpenIcon className="size-7 text-accent" aria-hidden="true" />
-          ไดอารี่
-        </Link>
-        {user && <span className="truncate text-sm text-stone-500">{user.username}</span>}
-      </div>
-      {user && (
-        <nav className="-mx-1 mt-4 flex gap-1 overflow-x-auto" aria-label="เมนูหลัก">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition ${
-                  isActive ? "bg-ink text-paper" : "text-stone-600 hover:bg-stone-200/60"
-                }`
-              }
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-      )}
-    </header>
-  );
 }
 
 const protect = (el) => <RequireAuth>{el}</RequireAuth>;
@@ -123,34 +75,49 @@ function MeetingOccurrenceRoute() {
   );
 }
 
+const AUTH_PATHS = ["/login", "/register"];
+
 export default function App() {
   const { pathname } = useLocation();
-  // Kanban boards need the full width; everything else stays in a readable column
-  const wide = /^\/boards\/[^/]+/.test(pathname);
+  const { user } = useAuth();
+  const win = windowFor(pathname);
+  const isAuthPage = AUTH_PATHS.includes(pathname);
+
   return (
-    <div className="min-h-dvh">
+    <div className={`min-h-dvh ${user && !isAuthPage ? "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10" : "pb-10"}`}>
       <OfflineBanner />
+      <MenuBar />
       <InsecureBanner />
-      <Header />
-      <main className={`mx-auto px-4 pb-16 ${wide ? "max-w-none" : "max-w-3xl"}`}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={protect(<EntryList />)} />
-          <Route path="/entries/new" element={protect(<EntryEditor />)} />
-          <Route path="/entries/:id" element={protect(<EntryEditor />)} />
-          <Route path="/boards" element={protect(<Boards />)} />
-          <Route path="/boards/:id" element={protect(<Board />)} />
-          <Route path="/today" element={protect(<Today />)} />
-          <Route path="/meetings" element={protect(<Meetings />)} />
-          <Route path="/events" element={protect(<Events />)} />
-          <Route path="/calendar" element={protect(<Calendar />)} />
-          <Route path="/stats" element={protect(<Stats />)} />
-          <Route path="/settings" element={protect(<Settings />)} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <MeetingOccurrenceRoute />
-      </main>
+      {isAuthPage ? (
+        <main className="px-3 pt-8 sm:pt-16">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </main>
+      ) : (
+        <main className="px-2 pt-3 sm:px-4 md:pt-6">
+          {user && <FolderTabs wide={win.wide} />}
+          <Window key={win.title + (win.back || "")} title={win.title} icon={win.icon} back={win.back} wide={win.wide}>
+            <Routes>
+              <Route path="/" element={protect(<EntryList />)} />
+              <Route path="/entries/new" element={protect(<EntryEditor />)} />
+              <Route path="/entries/:id" element={protect(<EntryEditor />)} />
+              <Route path="/boards" element={protect(<Boards />)} />
+              <Route path="/boards/:id" element={protect(<Board />)} />
+              <Route path="/today" element={protect(<Today />)} />
+              <Route path="/meetings" element={protect(<Meetings />)} />
+              <Route path="/events" element={protect(<Events />)} />
+              <Route path="/calendar" element={protect(<Calendar />)} />
+              <Route path="/stats" element={protect(<Stats />)} />
+              <Route path="/settings" element={protect(<Settings />)} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Window>
+          <MeetingOccurrenceRoute />
+        </main>
+      )}
+      {user && !isAuthPage && <Dock />}
     </div>
   );
 }

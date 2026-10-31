@@ -91,7 +91,7 @@ export default function EntryEditor() {
   if (loading) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-stone-200">
+    <form onSubmit={save} className="space-y-4 panel p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <input
           type="date"
@@ -140,7 +140,7 @@ export default function EntryEditor() {
       <div className="flex items-center justify-between gap-2">
         <div>
           {!isNew && (
-            <button type="button" className="btn text-red-600 hover:bg-red-50" onClick={remove}>
+            <button type="button" className="btn btn-danger" onClick={remove}>
               <TrashIcon className="size-4" aria-hidden="true" />
               ลบ
             </button>

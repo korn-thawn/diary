@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, PhotoIcon, PlusIcon, XMarkIcon } from "@heroicons/
 import { api, formatDate, photoUrl } from "../api";
 import { useAuth } from "../auth";
 import { MoodDot } from "../components/Mood";
+import { WindowActions } from "../components/ui/Window";
 
 const PAGE = 30;
 
@@ -109,10 +110,12 @@ export default function EntryList() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Link to={from && from === to ? `/entries/new?date=${from}` : "/entries/new"} className="btn btn-primary shrink-0">
-          <PlusIcon className="size-4" aria-hidden="true" />
-          เขียนบันทึก
-        </Link>
+        <WindowActions>
+          <Link to={from && from === to ? `/entries/new?date=${from}` : "/entries/new"} viewTransition className="inline-flex min-h-8 items-center gap-1 rounded-[4px] border-2 border-ink bg-paper px-2.5 font-display text-xs font-semibold text-ink shadow-[2px_2px_0_var(--color-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+            <PlusIcon className="size-4" aria-hidden="true" />
+            เขียนบันทึก
+          </Link>
+        </WindowActions>
       </div>
 
       {(from || to) && (
@@ -133,9 +136,8 @@ export default function EntryList() {
             <button
               key={t}
               onClick={() => toggleTag(t)}
-              className={`rounded-full px-3 py-1 text-sm transition ${
-                tag === t ? "bg-accent text-white" : "bg-stone-200/70 text-stone-700 hover:bg-stone-300/70"
-              }`}
+              aria-pressed={tag === t}
+              className="chip text-sm"
             >
               #{t} <span className="opacity-60">{count}</span>
             </button>
@@ -161,7 +163,7 @@ export default function EntryList() {
               <li key={e.id}>
                 <Link
                   to={`/entries/${e.id}`}
-                  className="flex gap-3 rounded-xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
+                  className="flex gap-3 panel p-4 transition-colors hover:border-ink"
                 >
                   <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import { TrashIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { useState } from "react";
+import { TrashIcon } from "@heroicons/react/20/solid";
+import { StarIcon } from "@heroicons/react/24/outline";
+import Dialog from "./ui/Dialog";
 import { api, today } from "../api";
 import { ColorPicker, IconPicker } from "./Pickers";
 
@@ -24,11 +26,6 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
   const [error, setError] = useState("");
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v?.target ? v.target.value : v }));
 
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   async function save(e) {
     e.preventDefault();
@@ -58,14 +55,8 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-12" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form onSubmit={save} className="w-full max-w-md space-y-4 rounded-2xl bg-surface p-5 shadow-xl" role="dialog" aria-modal="true" aria-label={event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"}>
-        <div className="flex items-center justify-between">
-          <h2 className="font-serif text-lg font-semibold">{event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"}</h2>
-          <button type="button" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100" onClick={onClose} aria-label="ปิด">
-            <XMarkIcon className="size-5" />
-          </button>
-        </div>
+    <Dialog title={event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"} icon={StarIcon} onClose={onClose}>
+      <form onSubmit={save} className="space-y-4">
         <input className="input" placeholder="เช่น วันเกิดแม่, ครบรอบแต่งงาน, จ่ายค่าเช่า" value={form.title} onChange={set("title")} maxLength={100} required autoFocus />
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <label className="block text-sm">
@@ -87,7 +78,7 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
                 role="radio"
                 aria-checked={form.repeat === r.value}
                 onClick={() => set("repeat")(r.value)}
-                className={`flex-1 rounded-lg px-2 py-1.5 text-sm transition ${form.repeat === r.value ? "bg-ink text-paper" : "bg-stone-100 text-stone-600 hover:bg-stone-200"}`}
+                className={`flex-1 rounded-lg px-2 py-1.5 text-sm transition ${form.repeat === r.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`}
               >
                 {r.label}
               </button>
@@ -110,7 +101,7 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
         <div className="flex items-center justify-between gap-2">
           <div>
             {event && (
-              <button type="button" className="btn px-2 text-sm text-red-600 hover:bg-red-50" onClick={remove}>
+              <button type="button" className="btn btn-danger px-2 text-sm" onClick={remove}>
                 <TrashIcon className="size-4" aria-hidden="true" /> ลบ
               </button>
             )}
@@ -121,6 +112,6 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
           </div>
         </div>
       </form>
-    </div>
+    </Dialog>
   );
 }

@@ -16,6 +16,7 @@ import { isDate } from "../dates";
 import { useAuth } from "../auth";
 import { color } from "../palette";
 import { EventIcon } from "./Events";
+import { TitleButton, WindowActions } from "../components/ui/Window";
 import MeetingModal from "../components/MeetingModal";
 
 const PX_PER_MIN = 1.1;
@@ -123,14 +124,14 @@ export default function Today() {
         </h1>
         <button className="btn btn-ghost px-2" onClick={() => go(shift(date, 1))} aria-label="วันถัดไป"><ChevronRightIcon className="size-5" /></button>
         {!isToday && <button className="btn btn-ghost px-2 text-sm" onClick={() => go(todayStr)}>วันนี้</button>}
-        <div className="ml-auto flex gap-2">
-          <Link to="/meetings" className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300">
-            <ListBulletIcon className="size-4" aria-hidden="true" /> การประชุมทั้งหมด
-          </Link>
-          <button className="btn btn-primary px-2.5 py-1.5 text-sm" onClick={() => setAdding(true)}>
+        <Link to="/meetings" viewTransition className="ml-auto inline-flex items-center gap-1 text-sm text-stone-600 underline-offset-4 hover:text-ink hover:underline">
+          <ListBulletIcon className="size-4" aria-hidden="true" /> การประชุมทั้งหมด
+        </Link>
+        <WindowActions>
+          <TitleButton onClick={() => setAdding(true)}>
             <PlusIcon className="size-4" aria-hidden="true" /> ประชุม
-          </button>
-        </div>
+          </TitleButton>
+        </WindowActions>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -143,7 +144,7 @@ export default function Today() {
       )}
 
       {(events.length > 0 || allDayCards.length > 0 || overdue.length > 0) && (
-        <section className="space-y-1.5 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200">
+        <section className="space-y-1.5 panel p-4">
           {events.map((e) => (
             <div key={`e${e.id}`} className="flex items-center gap-2 text-sm">
               <EventIcon event={e} size="size-6" iconSize="size-3.5" />
@@ -168,7 +169,7 @@ export default function Today() {
         </section>
       )}
 
-      <section className="rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-stone-200 sm:p-4" aria-label="ตารางเวลา">
+      <section className="panel p-3 sm:p-4" aria-label="ตารางเวลา">
         {!data ? (
           <p className="p-6 text-center text-stone-500">กำลังโหลด…</p>
         ) : (

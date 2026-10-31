@@ -1,6 +1,6 @@
 // Service worker: makes the app installable and lets the shell open offline.
 // Private data (/api, /ical) is NEVER cached — it always goes to the network.
-const VERSION = "v1";
+const VERSION = "v2"; // bump when the app shell changes (retro redesign)
 const SHELL = `shell-${VERSION}`;
 const ASSETS = "assets"; // hashed, immutable files
 

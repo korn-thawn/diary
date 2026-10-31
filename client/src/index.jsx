@@ -3,6 +3,19 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { AuthProvider } from "./auth";
 import App from "./App";
+// Self-hosted fonts (OFL): only the Thai + Latin subsets and the weights we use
+import "@fontsource/chakra-petch/thai-500.css";
+import "@fontsource/chakra-petch/thai-600.css";
+import "@fontsource/chakra-petch/thai-700.css";
+import "@fontsource/chakra-petch/latin-500.css";
+import "@fontsource/chakra-petch/latin-600.css";
+import "@fontsource/chakra-petch/latin-700.css";
+import "@fontsource/ibm-plex-sans-thai/thai-400.css";
+import "@fontsource/ibm-plex-sans-thai/thai-500.css";
+import "@fontsource/ibm-plex-sans-thai/thai-600.css";
+import "@fontsource/ibm-plex-sans-thai/latin-400.css";
+import "@fontsource/ibm-plex-sans-thai/latin-500.css";
+import "@fontsource/ibm-plex-sans-thai/latin-600.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(

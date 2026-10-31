@@ -23,9 +23,9 @@ import ThemePicker from "../components/ThemePicker";
 function Card({ icon: Icon, title, children, danger }) {
   return (
     <section
-      className={`rounded-2xl bg-surface p-5 shadow-sm ring-1 ${danger ? "ring-red-200" : "ring-stone-200"}`}
+      className={`panel p-4 sm:p-5 ${danger ? "border-red-700/60" : ""}`}
     >
-      <h2 className={`mb-3 flex items-center gap-2 font-serif text-lg font-semibold ${danger ? "text-red-700" : ""}`}>
+      <h2 className={`mb-3 flex items-center gap-2 font-display text-lg font-semibold ${danger ? "text-red-700" : ""}`}>
         <Icon className="size-5" aria-hidden="true" />
         {title}
       </h2>
@@ -166,7 +166,7 @@ export default function Settings() {
       <Card icon={ComputerDesktopIcon} title="อุปกรณ์อื่น">
         <p className="mb-3 text-sm text-stone-600">ถ้าเคย login ไว้ที่เครื่องอื่นแล้วลืมออก กดปุ่มนี้เพื่อออกจากระบบทุกเครื่อง ยกเว้นเครื่องนี้</p>
         <div className="flex flex-wrap items-center gap-3">
-          <button className="btn btn-ghost ring-1 ring-stone-300" onClick={logoutOthers}>
+          <button className="btn btn-outline" onClick={logoutOthers}>
             ออกจากระบบทุกอุปกรณ์อื่น
           </button>
           <Msg msg={othersMsg} />
@@ -193,11 +193,11 @@ export default function Settings() {
         <p className="mb-3 text-sm text-stone-600">ดาวน์โหลดบันทึกทั้งหมดของคุณ เรียงจากเก่าไปใหม่ (JSON รวมบอร์ดงาน การ์ด ป้าย และวันสำคัญด้วย) <strong>ไม่รวมไฟล์รูป</strong> รูปที่แนบไว้ดาวน์โหลดทีละรูปได้จากหน้าดูรูป</p>
         <div className="mb-4"><PhotoUsage onAuthError={() => setUser(null)} /></div>
         <div className="flex flex-wrap gap-2">
-          <a className="btn btn-ghost ring-1 ring-stone-300" href="/api/export?format=md" download>
+          <a className="btn btn-outline" href="/api/export?format=md" download>
             <ArrowDownTrayIcon className="size-4" aria-hidden="true" />
             Markdown (.md)
           </a>
-          <a className="btn btn-ghost ring-1 ring-stone-300" href="/api/export?format=json" download>
+          <a className="btn btn-outline" href="/api/export?format=json" download>
             <ArrowDownTrayIcon className="size-4" aria-hidden="true" />
             JSON
           </a>
@@ -223,7 +223,7 @@ export default function Settings() {
             onChange={(e) => setDel({ ...del, password: e.target.value })}
           />
           <Msg msg={delMsg} />
-          <button className="btn bg-red-600 text-white hover:bg-red-700" disabled={!canDelete || delBusy}>
+          <button className="btn border-2 border-ink bg-red-700 text-white shadow-[2px_2px_0_var(--color-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none" disabled={!canDelete || delBusy}>
             {delBusy ? "กำลังลบ…" : "ลบบัญชีถาวร"}
           </button>
         </form>

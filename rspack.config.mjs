@@ -16,6 +16,8 @@ export default (env, argv) => {
       path: path.join(__dirname, "client/dist"),
       filename: isProd ? "assets/[name].[contenthash:10].js" : "assets/[name].js",
       cssFilename: isProd ? "assets/[name].[contenthash:10].css" : "assets/[name].css",
+      // fonts and other files imported from CSS/JS (hashed → safe to cache forever)
+      assetModuleFilename: "assets/[hash][ext]",
       publicPath: "/",
       clean: true,
     },
