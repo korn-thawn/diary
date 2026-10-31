@@ -71,7 +71,7 @@ function rrule(e) {
 /**
  * @param {{ name: string, events: object[], cards: object[], now?: Date }} opts
  */
-function buildCalendar({ name, events = [], cards = [], now = new Date() }) {
+function buildCalendar({ name, events = [], cards = [], meetings = [], now = new Date() }) {
   const dtstamp = `DTSTAMP:${stamp(now)}`;
   const lines = [
     "BEGIN:VCALENDAR",
@@ -108,6 +108,23 @@ function buildCalendar({ name, events = [], cards = [], now = new Date() }) {
       `SUMMARY:${esc(c.title)}`,
       `DESCRIPTION:${esc(`บอร์ด: ${c.board_name}`)}`,
       "CATEGORIES:งาน",
+      "END:VEVENT"
+    );
+  }
+  // Meetings are expanded per occurrence (simpler than RRULE + EXDATE/RECURRENCE-ID and handles moves)
+  for (const m of meetings) {
+    if (m.cancelled) continue;
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:meeting-${m.meeting_id}-${m.original_date}@diary`,
+      dtstamp,
+      `DTSTART;TZID=${TZ}:${ymd(m.date)}T${hm(m.start)}`,
+      `DTEND;TZID=${TZ}:${ymd(m.date)}T${hm(m.end)}`,
+      `SUMMARY:${esc(m.title)}`,
+      ...(m.location ? [`LOCATION:${esc(m.location)}`] : []),
+      ...(m.url ? [`URL:${m.url}`] : []),
+      ...(m.agenda || m.url ? [`DESCRIPTION:${esc([m.agenda, m.url && `เข้าประชุม: ${m.url}`].filter(Boolean).join("\n\n"))}`] : []),
+      "CATEGORIES:ประชุม",
       "END:VEVENT"
     );
   }

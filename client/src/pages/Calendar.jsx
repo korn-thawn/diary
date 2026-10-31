@@ -9,6 +9,8 @@ import {
   PencilSquareIcon,
   PlusIcon,
   StarIcon,
+  UsersIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/20/solid";
 import { api, formatDate, moodOf, today } from "../api";
 import { addMonths, isDate, isMonth, monthGrid } from "../dates";
@@ -16,6 +18,7 @@ import { useAuth } from "../auth";
 import { color } from "../palette";
 import { MoodDot } from "../components/Mood";
 import EventModal from "../components/EventModal";
+import MeetingModal from "../components/MeetingModal";
 import { countdown, EventIcon } from "./Events";
 
 const WEEKDAYS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
@@ -23,12 +26,13 @@ const LAYERS = [
   { key: "entries", label: "บันทึก" },
   { key: "cards", label: "งาน" },
   { key: "events", label: "วันสำคัญ" },
+  { key: "meetings", label: "ประชุม" },
 ];
 const loadLayers = () => {
   try {
-    return { entries: true, cards: true, events: true, ...JSON.parse(localStorage.getItem("cal-layers") || "{}") };
+    return { entries: true, cards: true, events: true, meetings: true, ...JSON.parse(localStorage.getItem("cal-layers") || "{}") };
   } catch {
-    return { entries: true, cards: true, events: true };
+    return { entries: true, cards: true, events: true, meetings: true };
   }
 };
 const lastDay = (month) => {
@@ -101,6 +105,7 @@ export default function Calendar() {
   const [editing, setEditing] = useState(null); // { event } | { defaultDate }
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
+  const [addingMeeting, setAddingMeeting] = useState(false);
   const fail = (err) => (err.status === 401 ? setUser(null) : setError(err.message));
 
   useEffect(() => {
@@ -118,14 +123,21 @@ export default function Calendar() {
 
   useEffect(() => localStorage.setItem("cal-layers", JSON.stringify(layers)), [layers]);
 
+  useEffect(() => {
+    const onChange = () => setReload((n) => n + 1);
+    window.addEventListener("diary:meetings-changed", onChange);
+    return () => window.removeEventListener("diary:meetings-changed", onChange);
+  }, []);
+
   // Index everything by date
   const byDate = useMemo(() => {
     const map = {};
-    const at = (d) => (map[d] ||= { entry: null, cards: [], events: [] });
+    const at = (d) => (map[d] ||= { entry: null, cards: [], events: [], meetings: [] });
     if (data) {
       for (const e of data.entries) at(e.date).entry = e;
       for (const c of data.cards) at(c.due_date).cards.push(c);
       for (const e of data.events) at(e.date).events.push(e);
+      for (const m of data.meetings || []) at(m.date).meetings.push(m);
     }
     return map;
   }, [data]);
@@ -144,7 +156,8 @@ export default function Calendar() {
     } catch (err) { fail(err); }
   }
 
-  const day = selected ? byDate[selected] || { entry: null, cards: [], events: [] } : null;
+  const day = selected ? byDate[selected] || { entry: null, cards: [], events: [], meetings: [] } : null;
+  const openOcc = (o) => setParams((p) => { p.set("m", o.meeting_id); p.set("d", o.original_date); return p; });
 
   return (
     <div className="space-y-5">
@@ -203,6 +216,7 @@ export default function Calendar() {
                   const openCards = cards.filter((c) => !c.done);
                   const overdue = date < todayStr && openCards.length > 0;
                   const events = (layers.events && d?.events) || [];
+                  const meets = ((layers.meetings && d?.meetings) || []).filter((m) => !m.cancelled);
                   const isToday = date === todayStr;
                   const isSel = date === selected;
                   const label = [
@@ -210,6 +224,7 @@ export default function Calendar() {
                     entry && `${entry.count} บันทึก`,
                     cards.length && `${cards.length} งาน${overdue ? " (เลยกำหนด)" : ""}`,
                     ...events.map((e) => e.title),
+                    meets.length && `ประชุม ${meets.length}`,
                   ].filter(Boolean).join(" · ");
                   return (
                     <td key={j} className="p-0 align-top">
@@ -229,6 +244,12 @@ export default function Calendar() {
                             <span key={k} className={`size-2 rotate-45 rounded-[2px] ${color(e.color).dot}`} aria-hidden="true" />
                           ))}
                         </span>
+                        {meets.length > 0 && (
+                          <span className={`flex items-center gap-0.5 text-[10px] leading-none ${isSel ? "text-stone-300" : "text-indigo-700"}`}>
+                            <UsersIcon className="size-3" aria-hidden="true" />
+                            {meets.length}
+                          </span>
+                        )}
                         {cards.length > 0 && (
                           <span className={`flex items-center gap-0.5 text-[10px] leading-none ${overdue ? (isSel ? "text-red-200" : "text-red-700") : isSel ? "text-stone-300" : "text-stone-500"}`}>
                             {overdue ? <ExclamationCircleIcon className="size-3" aria-hidden="true" /> : <ClipboardDocumentCheckIcon className="size-3" aria-hidden="true" />}
@@ -247,6 +268,7 @@ export default function Calendar() {
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-stone-500">
           <span className="inline-flex items-center gap-1.5"><MoodDot value={4} size="size-2" /> บันทึก (สีตามอารมณ์)</span>
           <span className="inline-flex items-center gap-1.5"><span className="size-2 rotate-45 rounded-[2px] bg-rose-500" /> วันสำคัญ</span>
+          <span className="inline-flex items-center gap-1"><UsersIcon className="size-3" /> ประชุม</span>
           <span className="inline-flex items-center gap-1"><ClipboardDocumentCheckIcon className="size-3" /> งานครบกำหนด</span>
           <span className="inline-flex items-center gap-1 text-red-700"><ExclamationCircleIcon className="size-3" /> เลยกำหนด</span>
         </div>
@@ -262,13 +284,16 @@ export default function Calendar() {
               <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => setEditing({ defaultDate: selected })}>
                 <StarIcon className="size-4" aria-hidden="true" /> เพิ่มวันสำคัญ
               </button>
+              <button className="btn btn-ghost px-2.5 py-1.5 text-sm ring-1 ring-stone-300" onClick={() => setAddingMeeting(true)}>
+                <UsersIcon className="size-4" aria-hidden="true" /> เพิ่มประชุม
+              </button>
               <button className="btn btn-primary px-2.5 py-1.5 text-sm" onClick={() => navigate(`/entries/new?date=${selected}`)}>
                 <PencilSquareIcon className="size-4" aria-hidden="true" /> เขียนบันทึก
               </button>
             </div>
           </div>
 
-          {!day.entry && !day.cards.length && !day.events.length && <p className="text-sm text-stone-500">ยังไม่มีอะไรในวันนี้</p>}
+          {!day.entry && !day.cards.length && !day.events.length && !day.meetings.length && <p className="text-sm text-stone-500">ยังไม่มีอะไรในวันนี้</p>}
 
           {day.events.length > 0 && (
             <ul className="space-y-1.5">
@@ -301,6 +326,28 @@ export default function Calendar() {
             </Link>
           )}
 
+          {day.meetings.length > 0 && (
+            <ul className="space-y-1">
+              {day.meetings.map((m) => (
+                <li key={`${m.meeting_id}-${m.original_date}`}>
+                  <button onClick={() => openOcc(m)} className="flex w-full items-center gap-3 rounded-lg p-1.5 text-left hover:bg-stone-50">
+                    <span className={`flex size-8 shrink-0 items-center justify-center rounded-xl ${color(m.color).soft}`}>
+                      <UsersIcon className="size-4" aria-hidden="true" />
+                    </span>
+                    <span className={`min-w-0 flex-1 truncate ${m.cancelled ? "text-stone-400 line-through" : "font-medium"}`}>
+                      {m.title}
+                      {m.url && !m.cancelled && <VideoCameraIcon className="ml-1 inline size-3.5 text-stone-400" aria-label="มีลิงก์ประชุม" />}
+                    </span>
+                    <span className="shrink-0 text-xs text-stone-500 tabular-nums">
+                      {m.cancelled ? "ยกเลิก" : `${m.start}–${m.end}`}
+                      {!m.cancelled && m.conflicts.length > 0 && <span className="ml-1 font-medium text-amber-700">เวลาชน</span>}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {day.cards.length > 0 && (
             <ul className="space-y-1">
               {day.cards.map((c) => (
@@ -328,6 +375,16 @@ export default function Calendar() {
         <p className="text-center text-xs text-stone-400">
           <PlusIcon className="inline size-3.5" aria-hidden="true" /> แตะที่วันเพื่อดูรายละเอียด เขียนบันทึก หรือเพิ่มวันสำคัญ
         </p>
+      )}
+
+      {addingMeeting && (
+        <MeetingModal
+          defaultDate={selected}
+          onClose={() => setAddingMeeting(false)}
+          onSaved={() => setAddingMeeting(false)}
+          onDeleted={() => setAddingMeeting(false)}
+          onError={fail}
+        />
       )}
 
       {editing && (

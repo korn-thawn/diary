@@ -115,7 +115,7 @@ export default function TelegramSettings({ onAuthError }) {
       {msg && <p className={`text-sm ${msg.ok ? "text-emerald-700" : "text-red-600"}`}>{msg.text}</p>}
 
       <div className={st.linked ? "" : "pointer-events-none opacity-50"} aria-disabled={!st.linked}>
-        <Row title="สรุปประจำวัน" hint="งานวันนี้ งานที่เลยกำหนด และวันสำคัญวันนี้">
+        <Row title="สรุปประจำวัน" hint="ประชุม งานวันนี้ งานที่เลยกำหนด และวันสำคัญวันนี้">
           <input type="time" className="input w-28 py-1 text-sm" value={s.daily_time} onChange={(e) => e.target.value && save({ daily_time: e.target.value })} aria-label="เวลาส่งสรุป" />
           <Switch checked={s.daily} onChange={(v) => save({ daily: v })} label="สรุปประจำวัน" />
         </Row>
@@ -140,6 +140,11 @@ export default function TelegramSettings({ onAuthError }) {
         <Row title="เตือนก่อนเวลางาน" hint="เฉพาะการ์ดที่ตั้งเวลาไว้">
           <select className="input w-auto py-1 text-sm" value={s.card_minutes} onChange={(e) => save({ card_minutes: Number(e.target.value) })} aria-label="เตือนก่อนเวลางาน">
             {CARD_MINUTE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </Row>
+        <Row title="เตือนก่อนประชุม" hint="ค่าเริ่มต้น ตั้งแยกรายการประชุมได้">
+          <select className="input w-auto py-1 text-sm" value={s.meeting_minutes} onChange={(e) => save({ meeting_minutes: Number(e.target.value) })} aria-label="เตือนก่อนประชุม">
+            {[0, 5, 10, 15, 30, 60].map((v) => <option key={v} value={v}>{v === 0 ? "ไม่เตือน" : v === 60 ? "1 ชั่วโมง" : `${v} นาที`}</option>)}
           </select>
         </Row>
         <Row title="เตือนให้เขียนไดอารี่" hint="ถ้าถึงเวลานี้แล้ววันนั้นยังไม่ได้เขียน">

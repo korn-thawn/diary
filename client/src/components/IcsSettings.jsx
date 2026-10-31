@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowPathIcon, CheckIcon, ClipboardDocumentIcon, LinkIcon, XCircleIcon } from "@heroicons/react/20/solid";
+import { ArrowPathIcon, CalendarDaysIcon, CheckIcon, ClipboardDocumentIcon, LinkIcon, XCircleIcon } from "@heroicons/react/20/solid";
 import { api } from "../api";
 
 function Toggle({ checked, onChange, children }) {
@@ -46,7 +46,7 @@ export default function IcsSettings({ onAuthError }) {
     return (
       <div className="space-y-3">
         <p className="text-sm text-stone-600">
-          สร้างลิงก์ลับสำหรับให้ Google Calendar (หรือแอปปฏิทินอื่น) ดึง<strong>วันสำคัญ</strong>และ<strong>งานที่มีกำหนดส่ง</strong>ไปแสดง เนื้อหาไดอารี่จะไม่ถูกส่งออกไป
+          สร้างลิงก์ลับสำหรับให้ Google Calendar (หรือแอปปฏิทินอื่น) ดึง<strong>วันสำคัญ</strong> <strong>งานที่มีกำหนดส่ง</strong> และ<strong>การประชุม</strong>ไปแสดง เนื้อหาไดอารี่จะไม่ถูกส่งออกไป
         </p>
         <button className="btn btn-primary" onClick={() => call("POST")}>
           <LinkIcon className="size-4" aria-hidden="true" /> สร้างลิงก์ปฏิทิน
@@ -69,8 +69,21 @@ export default function IcsSettings({ onAuthError }) {
       <div className="flex flex-wrap gap-4">
         <Toggle checked={state.events} onChange={(v) => call("PATCH", { events: v })}>ส่งวันสำคัญ</Toggle>
         <Toggle checked={state.cards} onChange={(v) => call("PATCH", { cards: v })}>ส่งงานที่ยังไม่เสร็จ (มีกำหนดส่ง)</Toggle>
+        <Toggle checked={state.meetings} onChange={(v) => call("PATCH", { meetings: v })}>ส่งการประชุม</Toggle>
       </div>
 
+      <div className="rounded-xl bg-stone-50 p-3">
+        <p className="mb-2 text-sm font-medium">iPhone / iPad / Mac (ปฏิทินของ Apple)</p>
+        <a href={state.webcal} className="btn btn-primary px-3 py-1.5 text-sm">
+          <CalendarDaysIcon className="size-4" aria-hidden="true" /> เพิ่มในปฏิทิน Apple
+        </a>
+        <p className="mt-2 text-xs text-stone-500">
+          กดปุ่มนี้<strong>บน iPhone หรือ Mac</strong> แล้วเลือก "สมัครรับ" ถ้ากดแล้วไม่มีอะไรขึ้น ให้ไปที่ การตั้งค่า → ปฏิทิน → บัญชี → เพิ่มบัญชี → อื่นๆ → เพิ่มปฏิทินที่สมัครรับ แล้ววางลิงก์ข้างบน
+          ปฏิทินของ Apple ดึงข้อมูลใหม่ตามรอบที่ตั้งในเครื่อง (ตั้งเป็นทุก 15 นาทีได้ที่หน้าบัญชีนั้น)
+        </p>
+      </div>
+
+      <p className="text-sm font-medium">Google Calendar</p>
       <ol className="list-decimal space-y-1 pl-5 text-sm text-stone-600">
         <li>เปิด Google Calendar <strong>บนคอมพิวเตอร์</strong> (แอปมือถือเพิ่มจาก URL ไม่ได้)</li>
         <li>ที่แถบซ้าย ตรง "ปฏิทินอื่นๆ" กด <strong>+</strong> แล้วเลือก <strong>"จาก URL"</strong></li>

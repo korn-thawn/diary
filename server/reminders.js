@@ -3,6 +3,7 @@
 const db = require("./db");
 const telegram = require("./telegram");
 const { occurrences, addPeriod, diffDays } = require("./recur");
+const { occurrencesFor } = require("./meetings");
 
 const TZ = "Asia/Bangkok";
 const esc = telegram.escapeHtml;
@@ -20,6 +21,12 @@ const toMin = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5))
 const inWindow = (minutes, start, len) => minutes >= start && minutes < start + len;
 const thDate = (d) => new Date(`${d}T00:00:00+07:00`).toLocaleDateString("th-TH", { timeZone: TZ, weekday: "short", day: "numeric", month: "short" });
 const link = (path) => (telegram.appUrl() ? `\n${telegram.appUrl()}${path}` : "");
+
+async function labelNames(ids) {
+  if (!ids?.length) return [];
+  const { rows } = await db.query("SELECT name FROM labels WHERE id = ANY($1::bigint[]) ORDER BY name", [ids]);
+  return rows.map((r) => r.name);
+}
 
 async function claim(userId, kind, ref) {
   const { rowCount } = await db.query(
@@ -56,13 +63,22 @@ async function openCards(userId, { before, on }) {
 // The morning summary (also used by the /today bot command).
 async function buildToday(userId, now = new Date()) {
   const { date } = localNow(now);
-  const [overdue, today, events, entry] = await Promise.all([
+  const [overdue, today, events, entry, meetings] = await Promise.all([
     openCards(userId, { before: date }),
     openCards(userId, { on: date }),
     eventsBetween(userId, date, date),
     db.query("SELECT 1 FROM entries WHERE user_id = $1 AND entry_date = $2::date LIMIT 1", [userId, date]),
+    occurrencesFor(userId, date, date),
   ]);
   const lines = [`<b>สรุปวันนี้ · ${esc(thDate(date))}</b>`];
+  const live = meetings.filter((m) => !m.cancelled);
+  if (live.length) {
+    lines.push("", `<b>ประชุมวันนี้ ${live.length} รายการ</b>`);
+    for (const m of live) {
+      lines.push(`• ${m.start}–${m.end} ${esc(m.title)}${m.location ? ` <i>@ ${esc(m.location)}</i>` : ""}${m.conflicts.length ? " (เวลาชน)" : ""}`);
+      if (m.url) lines.push(`  <a href="${esc(m.url)}">เข้าประชุม</a>`);
+    }
+  }
   if (events.length) {
     lines.push("", "<b>วันสำคัญ</b>");
     for (const e of events) lines.push(`• ${esc(e.title)}${e.years > 0 ? ` (ครบ ${e.years} ปี)` : ""}${e.time ? ` ${e.time}` : ""}`);
@@ -76,7 +92,7 @@ async function buildToday(userId, now = new Date()) {
     for (const c of overdue.slice(0, 10)) lines.push(`• ${esc(c.title)} — เลยมา ${diffDays(date, c.due_date)} วัน`);
     if (overdue.length > 10) lines.push(`…และอีก ${overdue.length - 10} งาน`);
   }
-  if (!events.length && !today.length && !overdue.length) lines.push("", "ไม่มีงานหรือวันสำคัญวันนี้");
+  if (!events.length && !today.length && !overdue.length && !live.length) lines.push("", "ไม่มีงาน ประชุม หรือวันสำคัญวันนี้");
   if (!entry.rows.length) lines.push("", "ยังไม่ได้เขียนไดอารี่วันนี้");
   return lines.join("\n") + link("/calendar");
 }
@@ -137,6 +153,26 @@ async function remindUser(user, now) {
     }
   }
 
+  // 5) meetings, N minutes before (per-meeting override, else the user's default)
+  for (const m of await occurrencesFor(user.id, date, date)) {
+    if (m.cancelled) continue;
+    const before = m.remind_minutes ?? user.tg_meeting_minutes;
+    if (!before) continue;
+    const left = toMin(m.start) - minutes;
+    if (left < 0 || left > before) continue;
+    const ref = `${m.meeting_id}:${m.date}T${m.start}`;
+    if (!(await claim(user.id, "meeting", ref))) continue;
+    const labels = await labelNames(m.label_ids);
+    const html = [
+      `<b>${left === 0 ? "ประชุมเริ่มแล้ว" : `อีก ${left} นาที ประชุม`}</b> · ${m.start}–${m.end}`,
+      esc(m.title) + (labels.length ? ` <i>[${esc(labels.join(", "))}]</i>` : ""),
+      ...(m.location ? [`สถานที่: ${esc(m.location)}`] : []),
+      ...(m.conflicts.length ? [`เวลาชนกับ: ${esc(m.conflicts.map((c) => c.title).join(", "))}`] : []),
+      ...(m.url ? [`<a href="${esc(m.url)}">เข้าประชุม</a>`] : []),
+    ].join("\n") + link(`/today?date=${m.date}`);
+    if (await sendClaimed(user, [["meeting", ref]], html)) sent.push("meeting");
+  }
+
   // 4) evening nudge to write the diary
   if (user.tg_diary && inWindow(minutes, toMin(user.diary_time), 3 * 60)) {
     const { rows } = await db.query("SELECT 1 FROM entries WHERE user_id = $1 AND entry_date = $2::date LIMIT 1", [user.id, date]);
@@ -156,7 +192,7 @@ async function tick(now = new Date()) {
   try {
     const { rows: users } = await db.query(
       `SELECT id, tg_chat_id, tg_daily, to_char(tg_daily_time, 'HH24:MI') AS daily_time, tg_event_days,
-              tg_card_minutes, tg_diary, to_char(tg_diary_time, 'HH24:MI') AS diary_time
+              tg_card_minutes, tg_diary, to_char(tg_diary_time, 'HH24:MI') AS diary_time, tg_meeting_minutes
        FROM users WHERE tg_chat_id IS NOT NULL`
     );
     for (const u of users) {

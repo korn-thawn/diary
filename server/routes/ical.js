@@ -4,6 +4,9 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const db = require("../db");
 const { buildCalendar } = require("../ics");
+const { occurrencesFor } = require("../meetings");
+const { addPeriod } = require("../recur");
+const { localToday } = require("../util");
 
 const router = express.Router();
 
@@ -15,13 +18,14 @@ router.get("/:file", async (req, res) => {
   const m = /^([0-9a-f]{64})\.ics$/.exec(req.params.file);
   if (!m) return res.status(404).type("text/plain").send("not found");
   const { rows: users } = await db.query(
-    "SELECT id, username, ics_cards, ics_events FROM users WHERE ics_token = $1",
+    "SELECT id, username, ics_cards, ics_events, ics_meetings FROM users WHERE ics_token = $1",
     [m[1]]
   );
   const user = users[0];
   if (!user) return res.status(404).type("text/plain").send("not found");
 
-  const [events, cards] = await Promise.all([
+  const today = localToday();
+  const [events, cards, meetings] = await Promise.all([
     user.ics_events
       ? db.query(
           `SELECT id::text AS id, title, to_char(date, 'YYYY-MM-DD') AS date, repeat,
@@ -40,12 +44,13 @@ router.get("/:file", async (req, res) => {
           [user.id]
         )
       : { rows: [] },
+    user.ics_meetings ? occurrencesFor(user.id, addPeriod(today, "day", -30), addPeriod(today, "day", 180)) : [],
   ]);
 
   res.setHeader("Content-Type", "text/calendar; charset=utf-8");
   res.setHeader("Content-Disposition", 'inline; filename="diary.ics"');
   res.setHeader("Cache-Control", "no-cache");
-  res.send(buildCalendar({ name: `ไดอารี่ (${user.username})`, events: events.rows, cards: cards.rows }));
+  res.send(buildCalendar({ name: `ไดอารี่ (${user.username})`, events: events.rows, cards: cards.rows, meetings }));
 });
 
 module.exports = router;

@@ -60,6 +60,52 @@ export const RECURRENCES = [
 ];
 export const recurrenceLabel = (v) => RECURRENCES.find((r) => r.value === v)?.label ?? "";
 
+// Meetings
+export const WEEKDAYS = [
+  { value: 1, short: "จ", label: "จันทร์" },
+  { value: 2, short: "อ", label: "อังคาร" },
+  { value: 3, short: "พ", label: "พุธ" },
+  { value: 4, short: "พฤ", label: "พฤหัสบดี" },
+  { value: 5, short: "ศ", label: "ศุกร์" },
+  { value: 6, short: "ส", label: "เสาร์" },
+  { value: 7, short: "อา", label: "อาทิตย์" },
+];
+export const MEETING_REPEATS = [
+  { value: "none", label: "ไม่ซ้ำ" },
+  { value: "daily", label: "ทุกวัน" },
+  { value: "weekdays", label: "วันทำงาน (จ–ศ)" },
+  { value: "weekly", label: "ทุกสัปดาห์" },
+  { value: "biweekly", label: "ทุก 2 สัปดาห์" },
+  { value: "monthly", label: "ทุกเดือน" },
+];
+// ISO weekday (1 = Mon) of a YYYY-MM-DD string
+export const isoWeekday = (d) => ((new Date(`${d}T00:00:00Z`).getUTCDay() + 6) % 7) + 1;
+// e.g. "ทุกสัปดาห์ จ, พ", "ทุกเดือน วันที่ 15", "วันทำงาน (จ–ศ) ถึง 31 ธ.ค."
+export function repeatText(m) {
+  const base = MEETING_REPEATS.find((r) => r.value === m.repeat)?.label ?? "";
+  if (m.repeat === "none") return "ครั้งเดียว";
+  let text = base;
+  if (m.repeat === "weekly" || m.repeat === "biweekly") {
+    const days = m.weekdays?.length ? m.weekdays : [isoWeekday(m.date)];
+    text += " " + days.map((d) => WEEKDAYS[d - 1].short).join(", ");
+  }
+  if (m.repeat === "monthly") text += ` วันที่ ${Number(m.date.slice(8))}`;
+  if (m.repeat_until) {
+    const [y, mo, d] = m.repeat_until.split("-").map(Number);
+    text += ` ถึง ${new Date(y, mo - 1, d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" })}`;
+  }
+  return text;
+}
+export const REMIND_OPTIONS = [
+  { value: null, label: "ตามค่าเริ่มต้น" },
+  { value: 0, label: "ไม่เตือน" },
+  { value: 5, label: "5 นาที" },
+  { value: 10, label: "10 นาที" },
+  { value: 15, label: "15 นาที" },
+  { value: 30, label: "30 นาที" },
+  { value: 60, label: "1 ชั่วโมง" },
+];
+
 export const PRIORITIES = [
   { value: 0, label: "ไม่ระบุ" },
   { value: 1, label: "ต่ำ" },

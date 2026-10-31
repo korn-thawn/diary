@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
 
   if (format === "json") {
-    const [boards, labels, events] = await Promise.all([
+    const [boards, labels, events, meetings] = await Promise.all([
       db.query(
         `SELECT b.name, b.color, b.icon, b.archived,
            coalesce((SELECT json_agg(json_build_object(
@@ -66,10 +66,25 @@ router.get("/", async (req, res) => {
          FROM events WHERE user_id = $1 ORDER BY date, id`,
         [req.session.userId]
       ),
+      db.query(
+        `SELECT m.title, to_char(m.date, 'YYYY-MM-DD') AS date, to_char(m.start_time, 'HH24:MI') AS start_time,
+                to_char(m.end_time, 'HH24:MI') AS end_time, m.repeat, m.weekdays, to_char(m.repeat_until, 'YYYY-MM-DD') AS repeat_until,
+                m.location, m.url, m.color, m.agenda,
+                coalesce((SELECT json_agg(l.name ORDER BY l.name) FROM meeting_labels ml JOIN labels l ON l.id = ml.label_id WHERE ml.meeting_id = m.id), '[]') AS labels,
+                coalesce((SELECT json_agg(json_build_object('date', to_char(e.date, 'YYYY-MM-DD'), 'cancelled', e.cancelled,
+                   'new_date', to_char(e.new_date, 'YYYY-MM-DD'), 'new_start', to_char(e.new_start, 'HH24:MI'), 'new_end', to_char(e.new_end, 'HH24:MI')))
+                   FROM meeting_exceptions e WHERE e.meeting_id = m.id), '[]') AS exceptions,
+                coalesce((SELECT json_agg(json_build_object('date', to_char(n.date, 'YYYY-MM-DD'), 'notes', n.notes) ORDER BY n.date)
+                   FROM meeting_notes n WHERE n.meeting_id = m.id AND n.notes <> ''), '[]') AS notes,
+                coalesce((SELECT json_agg(json_build_object('date', to_char(a.date, 'YYYY-MM-DD'), 'text', a.text, 'done', a.done) ORDER BY a.date, a.position)
+                   FROM meeting_actions a WHERE a.meeting_id = m.id), '[]') AS actions
+         FROM meetings m WHERE m.user_id = $1 ORDER BY m.date, m.id`,
+        [req.session.userId]
+      ),
     ]);
     res.type("application/json").send(
       JSON.stringify(
-        { exportedAt: new Date().toISOString(), username, entries: rows, events: events.rows, labels: labels.rows, boards: boards.rows },
+        { exportedAt: new Date().toISOString(), username, entries: rows, events: events.rows, meetings: meetings.rows, labels: labels.rows, boards: boards.rows },
         null,
         2
       )

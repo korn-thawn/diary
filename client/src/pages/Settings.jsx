@@ -181,7 +181,7 @@ export default function Settings() {
         <TelegramSettings onAuthError={() => setUser(null)} />
       </Card>
 
-      <Card icon={CalendarDaysIcon} title="เชื่อมกับ Google Calendar">
+      <Card icon={CalendarDaysIcon} title="เชื่อมกับปฏิทิน (Google / iPhone)">
         <IcsSettings onAuthError={() => setUser(null)} />
       </Card>
 

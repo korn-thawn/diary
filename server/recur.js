@@ -77,4 +77,98 @@ function nextDue(due, recurrence, today) {
   return next;
 }
 
-module.exports = { addPeriod, occurrences, nextOccurrence, nextDue, diffDays, toDays, fromDays };
+// ---------- meetings ----------
+// ISO weekday 1 = Monday … 7 = Sunday
+const isoWeekday = (date) => ((new Date(toDays(date) * 86400000).getUTCDay() + 6) % 7) + 1;
+const mondayOf = (date) => toDays(date) - (isoWeekday(date) - 1);
+const minDate = (a, b) => (a < b ? a : b);
+const maxDate = (a, b) => (a > b ? a : b);
+
+// Original (un-moved) occurrence dates of a meeting series within [from, to].
+function meetingBaseDates(m, from, to) {
+  const start = maxDate(from, m.date);
+  const end = m.repeat_until ? minDate(to, m.repeat_until) : to;
+  if (start > end) return [];
+  if (m.repeat === "none") return m.date >= from && m.date <= to ? [m.date] : [];
+  if (m.repeat === "monthly") {
+    const anchor = parse(m.date)[2];
+    const [sy, sm] = parse(start), [ey, em] = parse(m.date);
+    const out = [];
+    for (let k = Math.max(0, (sy - ey) * 12 + (sm - em) - 1); ; k++) {
+      const d = addPeriod(m.date, "month", k, anchor);
+      if (d > end) break;
+      if (d >= start) out.push(d);
+    }
+    return out;
+  }
+  const days = m.weekdays && m.weekdays.length ? m.weekdays.map(Number) : [isoWeekday(m.date)];
+  const firstMonday = mondayOf(m.date);
+  const out = [];
+  for (let n = toDays(start), last = toDays(end); n <= last; n++) {
+    const d = fromDays(n);
+    const wd = isoWeekday(d);
+    if (m.repeat === "daily") out.push(d);
+    else if (m.repeat === "weekdays") { if (wd <= 5) out.push(d); }
+    else if (m.repeat === "weekly") { if (days.includes(wd)) out.push(d); }
+    else if (m.repeat === "biweekly") {
+      if (days.includes(wd) && Math.round((mondayOf(d) - firstMonday) / 7) % 2 === 0) out.push(d);
+    }
+  }
+  return out;
+}
+
+const isMeetingDate = (m, date) => meetingBaseDates(m, date, date).length === 1;
+
+// Occurrences in [from, to] after applying per-occurrence exceptions.
+// exceptions: [{ date, cancelled, new_date, new_start, new_end }] for THIS meeting.
+// Each result: { date, start, end, original_date, cancelled, moved }
+function meetingOccurrences(m, from, to, exceptions = []) {
+  const ex = new Map(exceptions.map((e) => [e.date, e]));
+  const out = [];
+  const seen = new Set();
+  for (const base of meetingBaseDates(m, from, to)) {
+    seen.add(base);
+    const e = ex.get(base);
+    if (e?.cancelled) out.push({ date: base, start: m.start_time, end: m.end_time, original_date: base, cancelled: true, moved: false });
+    else if (e) {
+      if (e.new_date >= from && e.new_date <= to) out.push({ date: e.new_date, start: e.new_start, end: e.new_end, original_date: base, cancelled: false, moved: true });
+    } else out.push({ date: base, start: m.start_time, end: m.end_time, original_date: base, cancelled: false, moved: false });
+  }
+  // occurrences moved INTO the range from outside it
+  for (const e of exceptions) {
+    if (e.cancelled || seen.has(e.date) || !(e.new_date >= from && e.new_date <= to)) continue;
+    if (isMeetingDate(m, e.date)) out.push({ date: e.new_date, start: e.new_start, end: e.new_end, original_date: e.date, cancelled: false, moved: true });
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+}
+
+// Next non-cancelled occurrence on or after today (looks ahead up to ~400 days).
+function nextMeetingOccurrence(m, today, exceptions = []) {
+  for (let w = 0; w < 7; w++) {
+    const from = addPeriod(today, "day", w * 62);
+    const to = addPeriod(from, "day", 61);
+    const hit = meetingOccurrences(m, from, to, exceptions).find((o) => !o.cancelled && o.date >= today);
+    if (hit) return { ...hit, days_left: diffDays(hit.date, today) };
+    if (m.repeat === "none" && m.date < from) return null;
+    if (m.repeat_until && m.repeat_until < from) return null;
+  }
+  return null;
+}
+
+// Mark overlapping (non-cancelled) occurrences on the same date.
+// occs: [{ meeting_id, title, date, start, end, original_date, cancelled }] → adds conflicts: [{ meeting_id, original_date, title }]
+function findConflicts(occs) {
+  return occs.map((a) => ({
+    ...a,
+    conflicts: a.cancelled
+      ? []
+      : occs
+          .filter((b) => b !== a && !b.cancelled && b.date === a.date && a.start < b.end && b.start < a.end)
+          .map((b) => ({ meeting_id: b.meeting_id, original_date: b.original_date, title: b.title, start: b.start, end: b.end })),
+  }));
+}
+
+module.exports = {
+  addPeriod, occurrences, nextOccurrence, nextDue, diffDays, toDays, fromDays,
+  isoWeekday, meetingBaseDates, isMeetingDate, meetingOccurrences, nextMeetingOccurrence, findConflicts,
+};

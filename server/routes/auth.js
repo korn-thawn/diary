@@ -150,13 +150,16 @@ router.delete("/account", requireAuth, loginLimiter, async (req, res, next) => {
 
 // ---------- ICS feed (Google Calendar subscribe-by-URL) ----------
 async function icsState(req) {
-  const { rows } = await db.query("SELECT ics_token, ics_cards, ics_events FROM users WHERE id = $1", [req.session.userId]);
+  const { rows } = await db.query("SELECT ics_token, ics_cards, ics_events, ics_meetings FROM users WHERE id = $1", [req.session.userId]);
   const u = rows[0];
   return {
     enabled: Boolean(u.ics_token),
     url: u.ics_token ? `${req.protocol}://${req.get("host")}/ical/${u.ics_token}.ics` : null,
     cards: u.ics_cards,
     events: u.ics_events,
+    meetings: u.ics_meetings,
+    // webcal:// makes iPhone / Mac open the "subscribe to calendar" dialog directly
+    webcal: u.ics_token ? `webcal://${req.get("host")}/ical/${u.ics_token}.ics` : null,
   };
 }
 
@@ -170,13 +173,14 @@ router.post("/ics", requireAuth, async (req, res) => {
 });
 
 router.patch("/ics", requireAuth, async (req, res) => {
-  const { cards, events } = req.body || {};
-  if ((cards !== undefined && typeof cards !== "boolean") || (events !== undefined && typeof events !== "boolean")) {
-    return res.status(400).json({ error: "cards and events must be boolean" });
+  const { cards, events, meetings } = req.body || {};
+  if ([cards, events, meetings].some((v) => v !== undefined && typeof v !== "boolean")) {
+    return res.status(400).json({ error: "cards, events and meetings must be boolean" });
   }
   await db.query(
-    "UPDATE users SET ics_cards = coalesce($2, ics_cards), ics_events = coalesce($3, ics_events) WHERE id = $1",
-    [req.session.userId, cards ?? null, events ?? null]
+    `UPDATE users SET ics_cards = coalesce($2, ics_cards), ics_events = coalesce($3, ics_events),
+       ics_meetings = coalesce($4, ics_meetings) WHERE id = $1`,
+    [req.session.userId, cards ?? null, events ?? null, meetings ?? null]
   );
   res.json(await icsState(req));
 });

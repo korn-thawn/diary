@@ -2,6 +2,7 @@ const express = require("express");
 const db = require("../db");
 const { isDate, localToday } = require("../util");
 const { occurrences, diffDays, addPeriod } = require("../recur");
+const { occurrencesFor } = require("../meetings");
 
 const router = express.Router();
 const bad = (res, msg) => res.status(400).json({ error: msg });
@@ -57,12 +58,13 @@ router.get("/", async (req, res) => {
   const span = diffDays(to, from);
   if (span < 0 || span > 62) return bad(res, "range must be 0-62 days");
   const uid = req.session.userId;
-  const [entries, cards, events] = await Promise.all([
+  const [entries, cards, events, meetings] = await Promise.all([
     entrySummary(uid, from, to),
     dueCards(uid, from, to),
     eventOccurrences(uid, from, to),
+    occurrencesFor(uid, from, to),
   ]);
-  res.json({ entries, cards, events });
+  res.json({ entries, cards, events, meetings });
 });
 
 // GET /api/calendar/upcoming?today=&days=14 — overdue open cards + next N days
@@ -71,15 +73,17 @@ router.get("/upcoming", async (req, res) => {
   const days = Math.min(Math.max(parseInt(req.query.days, 10) || 14, 1), 60);
   const until = addPeriod(today, "day", days - 1);
   const uid = req.session.userId;
-  const [overdue, soon, events] = await Promise.all([
+  const [overdue, soon, events, meetings] = await Promise.all([
     dueCards(uid, null, addPeriod(today, "day", -1), { openOnly: true }),
     dueCards(uid, today, until, { openOnly: true }),
     eventOccurrences(uid, today, until),
+    occurrencesFor(uid, today, addPeriod(today, "day", 1)),
   ]);
   const withLeft = (date) => diffDays(date, today);
   res.json({
     today,
     until,
+    meetings: meetings.filter((m) => !m.cancelled).map((m) => ({ ...m, days_left: withLeft(m.date) })),
     overdue: overdue.map((c) => ({ ...c, days_left: withLeft(c.due_date) })),
     items: [
       ...soon.map((c) => ({ kind: "card", date: c.due_date, time: c.due_time, days_left: withLeft(c.due_date), ...c })),

@@ -10,7 +10,7 @@ const bad = (res, msg) => res.status(400).json({ error: msg });
 async function state(uid) {
   const { rows } = await db.query(
     `SELECT tg_chat_id, tg_daily, to_char(tg_daily_time, 'HH24:MI') AS daily_time, tg_event_days,
-            tg_card_minutes, tg_diary, to_char(tg_diary_time, 'HH24:MI') AS diary_time
+            tg_card_minutes, tg_diary, to_char(tg_diary_time, 'HH24:MI') AS diary_time, tg_meeting_minutes
      FROM users WHERE id = $1`,
     [uid]
   );
@@ -26,6 +26,7 @@ async function state(uid) {
       card_minutes: u.tg_card_minutes,
       diary: u.tg_diary,
       diary_time: u.diary_time,
+      meeting_minutes: u.tg_meeting_minutes,
     },
   };
 }
@@ -70,6 +71,10 @@ router.patch("/settings", async (req, res) => {
       return bad(res, "event_days must be up to 5 integers between 1 and 60");
     }
     add("tg_event_days", [...new Set(d)].sort((x, y) => y - x));
+  }
+  if (b.meeting_minutes !== undefined) {
+    if (!Number.isInteger(b.meeting_minutes) || b.meeting_minutes < 0 || b.meeting_minutes > 1440) return bad(res, "meeting_minutes must be 0-1440");
+    add("tg_meeting_minutes", b.meeting_minutes);
   }
   if (b.card_minutes !== undefined) {
     if (!Number.isInteger(b.card_minutes) || b.card_minutes < 0 || b.card_minutes > 1440) return bad(res, "card_minutes must be 0-1440");

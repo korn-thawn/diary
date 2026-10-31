@@ -1,4 +1,4 @@
-import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router";
+import { Link, Navigate, NavLink, Route, Routes, useLocation, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import { BookOpenIcon, ExclamationTriangleIcon, SignalSlashIcon } from "@heroicons/react/24/outline";
 import {
@@ -7,6 +7,7 @@ import {
   Cog6ToothIcon,
   ListBulletIcon,
   Squares2X2Icon,
+  SunIcon,
 } from "@heroicons/react/20/solid";
 import { useAuth } from "./auth";
 import Login from "./pages/Login";
@@ -19,6 +20,9 @@ import Settings from "./pages/Settings";
 import Boards from "./pages/Boards";
 import Board from "./pages/Board";
 import Events from "./pages/Events";
+import Today from "./pages/Today";
+import Meetings from "./pages/Meetings";
+import OccurrenceModal from "./components/OccurrenceModal";
 
 // Shown while the device is offline (the installed app can still open its cached shell)
 function OfflineBanner() {
@@ -59,6 +63,7 @@ function RequireAuth({ children }) {
 }
 
 const NAV = [
+  { to: "/today", label: "วันนี้", icon: SunIcon },
   { to: "/", label: "บันทึก", icon: ListBulletIcon, end: true },
   { to: "/boards", label: "งาน", icon: Squares2X2Icon },
   { to: "/calendar", label: "ปฏิทิน", icon: CalendarDaysIcon },
@@ -102,6 +107,22 @@ function Header() {
 
 const protect = (el) => <RequireAuth>{el}</RequireAuth>;
 
+// ?m=<meetingId>&d=<original date> opens a meeting occurrence on top of any page
+function MeetingOccurrenceRoute() {
+  const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const m = params.get("m"), d = params.get("d");
+  if (!user || !m || !d) return null;
+  return (
+    <OccurrenceModal
+      key={m + d}
+      meetingId={m}
+      date={d}
+      onClose={() => setParams((p) => { p.delete("m"); p.delete("d"); return p; }, { replace: true })}
+    />
+  );
+}
+
 export default function App() {
   const { pathname } = useLocation();
   // Kanban boards need the full width; everything else stays in a readable column
@@ -120,12 +141,15 @@ export default function App() {
           <Route path="/entries/:id" element={protect(<EntryEditor />)} />
           <Route path="/boards" element={protect(<Boards />)} />
           <Route path="/boards/:id" element={protect(<Board />)} />
+          <Route path="/today" element={protect(<Today />)} />
+          <Route path="/meetings" element={protect(<Meetings />)} />
           <Route path="/events" element={protect(<Events />)} />
           <Route path="/calendar" element={protect(<Calendar />)} />
           <Route path="/stats" element={protect(<Stats />)} />
           <Route path="/settings" element={protect(<Settings />)} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <MeetingOccurrenceRoute />
       </main>
     </div>
   );

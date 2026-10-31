@@ -71,6 +71,7 @@ app.use("/api/events", requireAuth, require("./routes/events"));
 app.use("/api/calendar", requireAuth, require("./routes/calendar").router);
 app.use("/api/photos", requireAuth, require("./routes/photos"));
 app.use("/api/telegram", requireAuth, require("./routes/telegram"));
+app.use("/api/meetings", requireAuth, require("./routes/meetings"));
 app.use("/api", (req, res) => res.status(404).json({ error: "not found" }));
 
 // Public ICS feed (no session, token in URL) — must come before the SPA fallback
