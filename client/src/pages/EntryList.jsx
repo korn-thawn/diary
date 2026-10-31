@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { api, formatDate, moodEmoji } from "../api";
+import { MagnifyingGlassIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { api, formatDate } from "../api";
 import { useAuth } from "../auth";
+import { MoodDot } from "../components/Mood";
 
 const PAGE = 30;
 
@@ -21,6 +23,8 @@ export default function EntryList() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") || "";
   const tag = params.get("tag") || "";
+  const from = params.get("from") || "";
+  const to = params.get("to") || "";
 
   const [search, setSearch] = useState(q);
   const [entries, setEntries] = useState([]);
@@ -35,6 +39,8 @@ export default function EntryList() {
     const qs = new URLSearchParams({ limit: PAGE, offset });
     if (q) qs.set("q", q);
     if (tag) qs.set("tag", tag);
+    if (from) qs.set("from", from);
+    if (to) qs.set("to", to);
     try {
       const d = await api(`/entries?${qs}`);
       setEntries((prev) => (offset ? [...prev, ...d.entries] : d.entries));
@@ -49,7 +55,7 @@ export default function EntryList() {
 
   useEffect(() => {
     load(0);
-  }, [q, tag]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [q, tag, from, to]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     api("/entries/tags").then((d) => setTags(d.tags)).catch(() => {});
@@ -72,22 +78,54 @@ export default function EntryList() {
     setParams(next);
   }
 
+  function clearDates() {
+    const next = new URLSearchParams(params);
+    next.delete("from");
+    next.delete("to");
+    setParams(next);
+  }
+
   const groups = useMemo(() => groupByMonth(entries), [entries]);
+  const filtered = Boolean(q || tag || from || to);
+  const dateLabel =
+    from && from === to
+      ? formatDate(from, { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+      : [from && formatDate(from), to && formatDate(to)].filter(Boolean).join(" – ");
 
   return (
     <div>
       <div className="mb-4 flex gap-2">
-        <input
-          className="input"
-          type="search"
-          placeholder="ค้นหาบันทึก…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Link to="/entries/new" className="btn btn-primary shrink-0">
-          + เขียนบันทึก
+        <div className="relative w-full">
+          <MagnifyingGlassIcon
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-stone-400"
+            aria-hidden="true"
+          />
+          <input
+            className="input pl-9!"
+            type="search"
+            placeholder="ค้นหาบันทึก…"
+            aria-label="ค้นหาบันทึก"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <Link to={from && from === to ? `/entries/new?date=${from}` : "/entries/new"} className="btn btn-primary shrink-0">
+          <PlusIcon className="size-4" aria-hidden="true" />
+          เขียนบันทึก
         </Link>
       </div>
+
+      {(from || to) && (
+        <div className="mb-4">
+          <button
+            onClick={clearDates}
+            className="inline-flex items-center gap-1 rounded-full bg-ink px-3 py-1 text-sm text-paper"
+          >
+            วันที่: {dateLabel}
+            <XMarkIcon className="size-4" aria-label="ล้างตัวกรองวันที่" />
+          </button>
+        </div>
+      )}
 
       {tags.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-2">
@@ -109,7 +147,7 @@ export default function EntryList() {
 
       {!loading && entries.length === 0 && (
         <div className="mt-16 text-center text-stone-500">
-          {q || tag ? "ไม่พบบันทึกที่ตรงกับเงื่อนไข" : "ยังไม่มีบันทึก เริ่มเขียนวันแรกกันเลย ✍️"}
+          {filtered ? "ไม่พบบันทึกที่ตรงกับเงื่อนไข" : "ยังไม่มีบันทึก เริ่มเขียนวันแรกกันเลย"}
         </div>
       )}
 
@@ -126,8 +164,11 @@ export default function EntryList() {
                   className="block rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="truncate font-serif text-lg font-medium">
-                      {moodEmoji(e.mood)} {e.title || <span className="text-stone-400">(ไม่มีหัวข้อ)</span>}
+                    <h3 className="flex min-w-0 items-center gap-2 font-serif text-lg font-medium">
+                      <MoodDot value={e.mood} />
+                      <span className="truncate">
+                        {e.title || <span className="text-stone-400">(ไม่มีหัวข้อ)</span>}
+                      </span>
                     </h3>
                     <time className="shrink-0 text-sm text-stone-500">{formatDate(e.entry_date)}</time>
                   </div>

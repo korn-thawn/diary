@@ -18,15 +18,18 @@ export async function api(path, { method = "GET", body } = {}) {
   return data;
 }
 
+// Diverging scale: rose (bad) → stone (neutral) → emerald (good).
+// Validated with the dataviz palette checker (CVD + normal-vision separation pass);
+// low-contrast steps always ship with a text label, never color alone.
 export const MOODS = [
-  { value: 1, emoji: "😢", label: "แย่มาก" },
-  { value: 2, emoji: "😕", label: "ไม่ค่อยดี" },
-  { value: 3, emoji: "😐", label: "เฉยๆ" },
-  { value: 4, emoji: "🙂", label: "ดี" },
-  { value: 5, emoji: "😄", label: "ดีมาก" },
+  { value: 1, label: "แย่มาก", bg: "bg-rose-700", hex: "#be123c" },
+  { value: 2, label: "ไม่ค่อยดี", bg: "bg-rose-400", hex: "#fb7185" },
+  { value: 3, label: "เฉยๆ", bg: "bg-stone-500", hex: "#78716c" },
+  { value: 4, label: "ดี", bg: "bg-emerald-500", hex: "#10b981" },
+  { value: 5, label: "ดีมาก", bg: "bg-emerald-700", hex: "#047857" },
 ];
 
-export const moodEmoji = (v) => MOODS.find((m) => m.value === v)?.emoji ?? "";
+export const moodOf = (v) => MOODS.find((m) => m.value === Math.round(v));
 
 export function today() {
   const d = new Date();

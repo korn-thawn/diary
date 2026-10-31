@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
-import { api, MOODS, today } from "../api";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { TrashIcon } from "@heroicons/react/20/solid";
+import { api, today } from "../api";
+import { isDate } from "../dates";
 import { useAuth } from "../auth";
-
-const EMPTY = { entry_date: today(), title: "", body: "", mood: null, tags: "" };
+import { MoodPicker } from "../components/Mood";
 
 export default function EntryEditor() {
   const { id } = useParams();
   const isNew = !id;
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { setUser } = useAuth();
 
-  const [form, setForm] = useState(EMPTY);
+  // ?date=YYYY-MM-DD comes from the calendar; computed lazily so "today" isn't stale
+  const [form, setForm] = useState(() => ({
+    entry_date: isDate(params.get("date")) ? params.get("date") : today(),
+    title: "",
+    body: "",
+    mood: null,
+    tags: "",
+  }));
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -75,24 +84,7 @@ export default function EntryEditor() {
           onChange={set("entry_date")}
           required
         />
-        <div className="flex gap-1" role="radiogroup" aria-label="อารมณ์">
-          {MOODS.map((m) => (
-            <button
-              type="button"
-              key={m.value}
-              title={m.label}
-              aria-label={m.label}
-              aria-checked={form.mood === m.value}
-              role="radio"
-              onClick={() => setForm((f) => ({ ...f, mood: f.mood === m.value ? null : m.value }))}
-              className={`rounded-full p-1.5 text-2xl transition ${
-                form.mood === m.value ? "bg-accent/15 ring-2 ring-accent" : "opacity-50 grayscale hover:opacity-100 hover:grayscale-0"
-              }`}
-            >
-              {m.emoji}
-            </button>
-          ))}
-        </div>
+        <MoodPicker value={form.mood} onChange={(mood) => setForm((f) => ({ ...f, mood }))} />
       </div>
 
       <input
@@ -125,6 +117,7 @@ export default function EntryEditor() {
         <div>
           {!isNew && (
             <button type="button" className="btn text-red-600 hover:bg-red-50" onClick={remove}>
+              <TrashIcon className="size-4" aria-hidden="true" />
               ลบ
             </button>
           )}

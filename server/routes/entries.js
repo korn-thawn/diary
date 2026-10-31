@@ -1,14 +1,13 @@
 const express = require("express");
 const db = require("../db");
+const { isDate } = require("../util");
 
 const router = express.Router();
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const ID_RE = /^\d{1,18}$/;
 const COLUMNS =
   "id::text AS id, to_char(entry_date, 'YYYY-MM-DD') AS entry_date, title, body, mood, tags, created_at, updated_at";
 
-const isDate = (s) => typeof s === "string" && DATE_RE.test(s) && !isNaN(Date.parse(s));
 const bad = (res, msg) => res.status(400).json({ error: msg });
 const notFound = (res) => res.status(404).json({ error: "not found" });
 
@@ -84,6 +83,23 @@ router.get("/tags", async (req, res) => {
     [req.session.userId]
   );
   res.json({ tags: rows });
+});
+
+// GET /api/entries/calendar?month=YYYY-MM — per-day summary for one month
+router.get("/calendar", async (req, res) => {
+  const { month } = req.query;
+  if (typeof month !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+    return bad(res, "month must be YYYY-MM");
+  }
+  const { rows } = await db.query(
+    `SELECT to_char(entry_date, 'YYYY-MM-DD') AS date, count(*)::int AS count,
+            round(avg(mood))::int AS mood, min(id)::text AS first_id
+     FROM entries
+     WHERE user_id = $1 AND entry_date >= $2::date AND entry_date < ($2::date + interval '1 month')
+     GROUP BY entry_date ORDER BY entry_date`,
+    [req.session.userId, `${month}-01`]
+  );
+  res.json({ days: rows });
 });
 
 router.get("/:id", async (req, res) => {

@@ -61,6 +61,9 @@ app.use(
 
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/entries", requireAuth, require("./routes/entries"));
+app.use("/api/stats", requireAuth, require("./routes/stats"));
+app.use("/api/export", requireAuth, require("./routes/export"));
+app.use("/api/boards", requireAuth, require("./routes/boards"));
 app.use("/api", (req, res) => res.status(404).json({ error: "not found" }));
 
 // React build: hashed assets get long cache, index.html never cached
@@ -84,6 +87,10 @@ app.get(/^(?!\/api(\/|$)).*/, (req, res, next) => {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.type === "entity.parse.failed") return res.status(400).json({ error: "invalid JSON" });
+  if (req.path.startsWith("/api/") && err.status >= 400 && err.status < 500) {
+    // Deliberate 4xx thrown from a route (e.g. 409 stale reorder) or body-parser (413 too large)
+    return res.status(err.status).json({ error: err.expose === false ? "bad request" : err.message });
+  }
   if (err.status === 404 || err.code === "ENOENT") {
     return res.status(404).send("Not found (did you run `npm run build`?)");
   }
@@ -91,7 +98,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "internal error" });
 });
 
-const server = app.listen(PORT, () => {
+// Express 5 passes listen errors (e.g. EADDRINUSE) to this callback
+const server = app.listen(PORT, (err) => {
+  if (err) {
+    console.error(`[diary] cannot listen on :${PORT}: ${err.message}`);
+    process.exit(1);
+  }
   console.log(`[diary] listening on :${PORT} (${process.env.NODE_ENV || "development"})`);
 });
 
