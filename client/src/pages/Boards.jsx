@@ -44,7 +44,7 @@ function BoardTile({ board, justDragged }) {
       <Link
         to={`/boards/${board.id}`}
         onClick={(e) => justDragged() && e.preventDefault()}
-        className="block h-full rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-stone-400"
+        className="block h-full rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-stone-400"
       >
         <div className="flex items-start gap-3">
           <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${c.soft}`}>
@@ -89,7 +89,7 @@ function NewBoardForm({ onCreated, onCancel }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+    <form onSubmit={submit} className="space-y-4 rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-stone-200">
       <h2 className="font-serif text-lg font-semibold">บอร์ดใหม่</h2>
       <input className="input" placeholder="ชื่อบอร์ด เช่น งานบ้าน, ทริปญี่ปุ่น" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} required autoFocus />
       <div>
@@ -186,7 +186,7 @@ export default function Boards() {
                 const Icon = boardIcon(b.icon);
                 return (
                   <li key={b.id}>
-                    <Link to={`/boards/${b.id}`} className="flex items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-stone-200 hover:ring-stone-400">
+                    <Link to={`/boards/${b.id}`} className="flex items-center gap-3 rounded-xl bg-surface p-3 ring-1 ring-stone-200 hover:ring-stone-400">
                       <span className={`flex size-8 items-center justify-center rounded-lg ${color(b.color).soft}`}>
                         <Icon className="size-4" aria-hidden="true" />
                       </span>

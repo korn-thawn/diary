@@ -22,7 +22,7 @@ export default function Popover({ button, children, align = "right", className =
       {button({ open, toggle: () => setOpen((o) => !o) })}
       {open && (
         <div
-          className={`absolute top-full z-30 mt-1 min-w-48 rounded-xl bg-white p-2 shadow-lg ring-1 ring-stone-200 ${
+          className={`absolute top-full z-30 mt-1 min-w-48 rounded-xl bg-surface p-2 shadow-lg ring-1 ring-stone-200 ${
             align === "right" ? "right-0" : "left-0"
           } ${className}`}
         >

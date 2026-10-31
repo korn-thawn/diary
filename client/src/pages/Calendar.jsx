@@ -41,7 +41,7 @@ function Upcoming({ data, onOpenEvent }) {
   if (!data) return null;
   const total = data.overdue.length + data.items.length;
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 sm:p-5">
+    <section className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-5">
       <button className="flex w-full items-center justify-between" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <h2 className="font-serif text-lg font-semibold">ใกล้ถึง <span className="text-sm font-normal text-stone-500">14 วัน</span></h2>
         <span className="text-xs text-stone-500">{total ? `${total} รายการ` : "ไม่มี"} · {open ? "ซ่อน" : "แสดง"}</span>
@@ -150,7 +150,7 @@ export default function Calendar() {
     <div className="space-y-5">
       <Upcoming data={upcoming} onOpenEvent={openEvent} />
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 sm:p-6">
+      <section className="rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-6">
         <div className="mb-3 flex items-center justify-between gap-2">
           <button className="btn btn-ghost px-2" onClick={() => goMonth(addMonths(month, -1))} aria-label="เดือนก่อน">
             <ChevronLeftIcon className="size-5" />
@@ -253,7 +253,7 @@ export default function Calendar() {
       </section>
 
       {day && (
-        <section className="space-y-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200 sm:p-5" aria-live="polite">
+        <section className="space-y-4 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 sm:p-5" aria-live="polite">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-serif text-lg font-semibold">
               {formatDate(selected, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}

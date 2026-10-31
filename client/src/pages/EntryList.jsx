@@ -161,7 +161,7 @@ export default function EntryList() {
               <li key={e.id}>
                 <Link
                   to={`/entries/${e.id}`}
-                  className="flex gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
+                  className="flex gap-3 rounded-xl bg-surface p-4 shadow-sm ring-1 ring-stone-200 transition hover:ring-accent/40"
                 >
                   <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">

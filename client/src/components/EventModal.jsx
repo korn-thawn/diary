@@ -58,8 +58,8 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:py-12" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form onSubmit={save} className="w-full max-w-md space-y-4 rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" aria-label={event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"}>
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-12" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+      <form onSubmit={save} className="w-full max-w-md space-y-4 rounded-2xl bg-surface p-5 shadow-xl" role="dialog" aria-modal="true" aria-label={event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"}>
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-lg font-semibold">{event ? "แก้วันสำคัญ" : "เพิ่มวันสำคัญ"}</h2>
           <button type="button" className="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100" onClick={onClose} aria-label="ปิด">

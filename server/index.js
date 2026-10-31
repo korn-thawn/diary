@@ -6,6 +6,8 @@ const session = require("express-session");
 const PgStore = require("connect-pg-simple")(session);
 const { pool } = require("./db");
 const requireAuth = require("./middleware/requireAuth");
+const telegram = require("./telegram");
+const reminders = require("./reminders");
 
 if (!process.env.SESSION_SECRET) {
   console.error("SESSION_SECRET is not set (see .env.example)");
@@ -68,6 +70,7 @@ app.use("/api/boards", requireAuth, require("./routes/boards"));
 app.use("/api/events", requireAuth, require("./routes/events"));
 app.use("/api/calendar", requireAuth, require("./routes/calendar").router);
 app.use("/api/photos", requireAuth, require("./routes/photos"));
+app.use("/api/telegram", requireAuth, require("./routes/telegram"));
 app.use("/api", (req, res) => res.status(404).json({ error: "not found" }));
 
 // Public ICS feed (no session, token in URL) — must come before the SPA fallback
@@ -80,6 +83,9 @@ app.use(
     setHeaders(res, filePath) {
       if (/\.[0-9a-f]{8,}\.(js|css)$/.test(filePath)) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      } else if (/(sw|theme)\.js$|\.webmanifest$/.test(filePath)) {
+        // must update as soon as a new version is deployed
+        res.setHeader("Cache-Control", "no-cache");
       }
     },
   })
@@ -112,11 +118,16 @@ const server = app.listen(PORT, (err) => {
     process.exit(1);
   }
   console.log(`[diary] listening on :${PORT} (${process.env.NODE_ENV || "development"})`);
+  // Start background jobs only once we own the port (a second instance must not poll the bot)
+  telegram.start({ onToday: (userId) => reminders.buildToday(userId) });
+  reminders.start();
 });
 
 // Graceful shutdown for pm2 reload
 function shutdown(signal) {
   console.log(`[diary] ${signal} received, shutting down`);
+  telegram.stop();
+  reminders.stop();
   server.close(() => pool.end().finally(() => process.exit(0)));
   setTimeout(() => process.exit(1), 10_000).unref();
 }

@@ -91,7 +91,7 @@ export default function EntryEditor() {
   if (loading) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
 
   return (
-    <form onSubmit={save} className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-stone-200">
+    <form onSubmit={save} className="space-y-4 rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-stone-200">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <input
           type="date"

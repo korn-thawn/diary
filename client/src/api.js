@@ -44,15 +44,15 @@ export function uploadPhoto({ entryId, cardId }, img, onProgress) {
 
 export const photoUrl = (id, thumb = false) => `/api/photos/${id}${thumb ? "/thumb" : ""}`;
 
-// Diverging scale: rose (bad) → stone (neutral) → emerald (good).
-// Validated with the dataviz palette checker (CVD + normal-vision separation pass);
-// low-contrast steps always ship with a text label, never color alone.
+// Diverging scale: rose (bad) → stone (neutral) → emerald (good), as CSS variables so the
+// light/dark themes can use different validated steps (see index.css :root and dark.css).
+// Validated with the dataviz palette checker; always shown with a text label, never color alone.
 export const MOODS = [
-  { value: 1, label: "แย่มาก", bg: "bg-rose-700", hex: "#be123c" },
-  { value: 2, label: "ไม่ค่อยดี", bg: "bg-rose-400", hex: "#fb7185" },
-  { value: 3, label: "เฉยๆ", bg: "bg-stone-500", hex: "#78716c" },
-  { value: 4, label: "ดี", bg: "bg-emerald-500", hex: "#10b981" },
-  { value: 5, label: "ดีมาก", bg: "bg-emerald-700", hex: "#047857" },
+  { value: 1, label: "แย่มาก", bg: "bg-(--mood-1)", hex: "var(--mood-1)" },
+  { value: 2, label: "ไม่ค่อยดี", bg: "bg-(--mood-2)", hex: "var(--mood-2)" },
+  { value: 3, label: "เฉยๆ", bg: "bg-(--mood-3)", hex: "var(--mood-3)" },
+  { value: 4, label: "ดี", bg: "bg-(--mood-4)", hex: "var(--mood-4)" },
+  { value: 5, label: "ดีมาก", bg: "bg-(--mood-5)", hex: "var(--mood-5)" },
 ];
 
 export const moodOf = (v) => MOODS.find((m) => m.value === Math.round(v));

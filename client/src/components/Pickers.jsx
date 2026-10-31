@@ -12,8 +12,8 @@ export function ColorPicker({ value, onChange, allowNone = false }) {
           aria-label="ไม่มีสี"
           title="ไม่มีสี"
           onClick={() => onChange(null)}
-          className={`flex size-7 items-center justify-center rounded-full bg-white ring-1 ring-stone-300 ${
-            !value ? "ring-2 ring-stone-700 ring-offset-1" : ""
+          className={`flex size-7 items-center justify-center rounded-full bg-surface ring-1 ring-stone-300 ${
+            !value ? "ring-2 ring-stone-700 ring-offset-1 ring-offset-surface" : ""
           }`}
         >
           <span className="h-0.5 w-4 rotate-45 bg-stone-400" />
@@ -29,7 +29,7 @@ export function ColorPicker({ value, onChange, allowNone = false }) {
           title={color(k).label}
           onClick={() => onChange(k)}
           className={`flex size-7 items-center justify-center rounded-full ${color(k).dot} ${
-            value === k ? "ring-2 ring-stone-700 ring-offset-1" : ""
+            value === k ? "ring-2 ring-stone-700 ring-offset-1 ring-offset-surface" : ""
           }`}
         >
           {value === k && <CheckIcon className="size-4 text-white" aria-hidden="true" />}

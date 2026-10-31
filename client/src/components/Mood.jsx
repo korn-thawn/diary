@@ -45,7 +45,7 @@ export function MoodPicker({ value, onChange }) {
               onClick={() => onChange(active ? null : m.value)}
               className={`size-7 rounded-full transition ${m.bg} ${
                 active
-                  ? "ring-2 ring-offset-2 ring-stone-700"
+                  ? "ring-2 ring-offset-2 ring-offset-surface ring-stone-700"
                   : "opacity-35 hover:opacity-80 focus-visible:opacity-80"
               }`}
             />

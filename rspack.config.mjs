@@ -49,6 +49,10 @@ export default (env, argv) => {
     },
     plugins: [
       new rspack.HtmlRspackPlugin({ template: "./client/public/index.html" }),
+      // static files served from the site root: theme.js, sw.js, manifest, icons
+      new rspack.CopyRspackPlugin({
+        patterns: [{ from: "client/public", to: ".", globOptions: { ignore: ["**/index.html"] } }],
+      }),
     ],
     performance: { hints: false },
     devServer: {

@@ -66,7 +66,7 @@ export default function Stats() {
 
 function Tile({ icon: Icon, label, value, unit, sub, accent }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-stone-200">
+    <div className="rounded-xl bg-surface p-4 shadow-sm ring-1 ring-stone-200">
       <div className="flex items-center gap-1.5 text-xs text-stone-500">
         <Icon className={`size-4 ${accent ? "text-accent" : ""}`} aria-hidden="true" />
         {label}
@@ -82,7 +82,7 @@ function Tile({ icon: Icon, label, value, unit, sub, accent }) {
 
 function Card({ title, sub, children }) {
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+    <section className="rounded-2xl bg-surface p-5 shadow-sm ring-1 ring-stone-200">
       <h2 className="font-serif text-lg font-semibold">{title}</h2>
       {sub && <p className="text-xs text-stone-500">{sub}</p>}
       <div className="mt-4">{children}</div>
@@ -135,7 +135,7 @@ function MoodLine({ points, today: todayStr }) {
         {MOODS.map((m) => (
           <g key={m.value}>
             <line x1={L} x2={W - R} y1={y(m.value)} y2={y(m.value)} className="stroke-stone-200" strokeWidth="1" />
-            <circle cx={10} cy={y(m.value)} r={4} fill={m.hex} />
+            <circle cx={10} cy={y(m.value)} r={4} style={{ fill: m.hex }} />
             <text x={20} y={y(m.value)} dy="0.35em" className="fill-stone-500 text-[11px]">
               {m.label}
             </text>
@@ -166,8 +166,8 @@ function MoodLine({ points, today: todayStr }) {
             cx={x(p.d)}
             cy={y(p.mood)}
             r={hover?.date === p.date ? 6 : 4}
-            fill={moodOf(p.mood).hex}
-            className="stroke-white"
+            style={{ fill: moodOf(p.mood).hex }}
+            className="stroke-surface"
             strokeWidth="2"
           />
         ))}

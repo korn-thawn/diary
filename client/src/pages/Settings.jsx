@@ -3,7 +3,9 @@ import { useNavigate } from "react-router";
 import {
   ArrowDownTrayIcon,
   ArrowRightStartOnRectangleIcon,
+  BellAlertIcon,
   CalendarDaysIcon,
+  SwatchIcon,
   ComputerDesktopIcon,
   ExclamationTriangleIcon,
   KeyIcon,
@@ -15,11 +17,13 @@ import { useAuth } from "../auth";
 import LabelManager from "../components/LabelManager";
 import IcsSettings from "../components/IcsSettings";
 import PhotoUsage from "../components/PhotoUsage";
+import TelegramSettings from "../components/TelegramSettings";
+import ThemePicker from "../components/ThemePicker";
 
 function Card({ icon: Icon, title, children, danger }) {
   return (
     <section
-      className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ${danger ? "ring-red-200" : "ring-stone-200"}`}
+      className={`rounded-2xl bg-surface p-5 shadow-sm ring-1 ${danger ? "ring-red-200" : "ring-stone-200"}`}
     >
       <h2 className={`mb-3 flex items-center gap-2 font-serif text-lg font-semibold ${danger ? "text-red-700" : ""}`}>
         <Icon className="size-5" aria-hidden="true" />
@@ -167,6 +171,14 @@ export default function Settings() {
           </button>
           <Msg msg={othersMsg} />
         </div>
+      </Card>
+
+      <Card icon={SwatchIcon} title="การแสดงผล">
+        <ThemePicker />
+      </Card>
+
+      <Card icon={BellAlertIcon} title="แจ้งเตือน Telegram">
+        <TelegramSettings onAuthError={() => setUser(null)} />
       </Card>
 
       <Card icon={CalendarDaysIcon} title="เชื่อมกับ Google Calendar">

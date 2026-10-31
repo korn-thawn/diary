@@ -18,7 +18,7 @@ export function CardFace({ card, labelsById, todayStr, done, dragging }) {
   const labels = card.label_ids.map((id) => labelsById[id]).filter(Boolean);
   return (
     <div
-      className={`relative overflow-hidden rounded-xl bg-white p-3 text-left shadow-sm ring-1 ring-stone-200 ${
+      className={`relative overflow-hidden rounded-xl bg-surface p-3 text-left shadow-sm ring-1 ring-stone-200 ${
         dragging ? "rotate-1 shadow-lg ring-stone-400" : "hover:ring-stone-400"
       } ${done && !dragging ? "opacity-60" : ""}`}
     >

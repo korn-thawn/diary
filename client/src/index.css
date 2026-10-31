@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "./dark.css";
+
+/* Dark mode follows the .dark class on <html> (set by /theme.js before first paint) */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: "Sarabun", "Noto Sans Thai", "Leelawadee UI", system-ui, sans-serif;
@@ -6,6 +10,17 @@
   --color-paper: #f7f3ec;
   --color-ink: #2b2620;
   --color-accent: #b5552b;
+  /* card / panel background (white in light mode, remapped in dark.css) */
+  --color-surface: #ffffff;
+}
+
+:root {
+  /* mood scale, light surfaces (dark values live in dark.css) */
+  --mood-1: #be123c;
+  --mood-2: #fb7185;
+  --mood-3: #78716c;
+  --mood-4: #10b981;
+  --mood-5: #047857;
 }
 
 @layer base {
@@ -15,7 +30,7 @@
 }
 
 @utility input {
-  @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20;
+  @apply w-full rounded-lg border border-stone-300 bg-surface px-3 py-2 outline-none focus:border-accent focus:ring-2 focus:ring-accent/20;
 }
 
 @utility btn {

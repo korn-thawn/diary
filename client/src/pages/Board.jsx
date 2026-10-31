@@ -80,8 +80,8 @@ function BoardSettings({ board, onUpdate, onDelete }) {
 function DeleteColumnDialog({ column, others, cardCount, onCancel, onConfirm }) {
   const [moveTo, setMoveTo] = useState(others[0]?.id || "");
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink/40 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-5 shadow-xl">
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+      <div className="w-full max-w-sm space-y-4 rounded-2xl bg-surface p-5 shadow-xl">
         <h2 className="font-serif text-lg font-semibold">ลบคอลัมน์ "{column.name}"</h2>
         <p className="text-sm text-stone-600">คอลัมน์นี้มี {cardCount} การ์ด จะทำอย่างไรกับการ์ด?</p>
         <label className="block text-sm">

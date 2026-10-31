@@ -29,7 +29,7 @@ export default function AuthForm({ title, submitLabel, onSubmit, footer, minPass
   }
 
   return (
-    <div className="mx-auto mt-10 max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-stone-200">
+    <div className="mx-auto mt-10 max-w-sm rounded-2xl bg-surface p-8 shadow-sm ring-1 ring-stone-200">
       <h1 className="mb-6 font-serif text-2xl font-semibold">{title}</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className="block">

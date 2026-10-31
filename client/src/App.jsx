@@ -1,5 +1,6 @@
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router";
-import { BookOpenIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
+import { BookOpenIcon, ExclamationTriangleIcon, SignalSlashIcon } from "@heroicons/react/24/outline";
 import {
   CalendarDaysIcon,
   ChartBarIcon,
@@ -18,6 +19,24 @@ import Settings from "./pages/Settings";
 import Boards from "./pages/Boards";
 import Board from "./pages/Board";
 import Events from "./pages/Events";
+
+// Shown while the device is offline (the installed app can still open its cached shell)
+function OfflineBanner() {
+  const [online, setOnline] = useState(() => navigator.onLine);
+  useEffect(() => {
+    const on = () => setOnline(true), off = () => setOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+  if (online) return null;
+  return (
+    <div className="flex items-center justify-center gap-2 bg-stone-700 px-4 py-2 text-center text-sm text-stone-100" role="status">
+      <SignalSlashIcon className="size-4 shrink-0" aria-hidden="true" />
+      ออฟไลน์อยู่ ข้อมูลจะโหลดและบันทึกได้เมื่อกลับมาออนไลน์
+    </div>
+  );
+}
 
 function InsecureBanner() {
   const { protocol, hostname } = window.location;
@@ -89,6 +108,7 @@ export default function App() {
   const wide = /^\/boards\/[^/]+/.test(pathname);
   return (
     <div className="min-h-dvh">
+      <OfflineBanner />
       <InsecureBanner />
       <Header />
       <main className={`mx-auto px-4 pb-16 ${wide ? "max-w-none" : "max-w-3xl"}`}>

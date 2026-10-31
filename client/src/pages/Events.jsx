@@ -60,7 +60,7 @@ export default function Events() {
       <ul className="space-y-2">
         {upcoming.map((e) => (
           <li key={e.id}>
-            <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left shadow-sm ring-1 ring-stone-200 hover:ring-stone-400">
+            <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-surface p-3 text-left shadow-sm ring-1 ring-stone-200 hover:ring-stone-400">
               <EventIcon event={e} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{e.title}</p>
@@ -86,7 +86,7 @@ export default function Events() {
           <ul className="space-y-2 opacity-70">
             {past.map((e) => (
               <li key={e.id}>
-                <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-white p-3 text-left ring-1 ring-stone-200 hover:ring-stone-400">
+                <button onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-xl bg-surface p-3 text-left ring-1 ring-stone-200 hover:ring-stone-400">
                   <EventIcon event={e} size="size-8" iconSize="size-4" />
                   <span className="min-w-0 flex-1 truncate">{e.title}</span>
                   <span className="text-xs text-stone-500">{formatDate(e.date, { day: "numeric", month: "short", year: "numeric" })}</span>

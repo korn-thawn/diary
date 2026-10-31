@@ -59,14 +59,14 @@ function ItemRow({ item, onToggle, onEdit, onDelete }) {
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={`group flex items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-stone-50 ${isDragging ? "z-10 bg-white shadow" : ""}`}
+      className={`group flex items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-stone-50 ${isDragging ? "z-10 bg-surface shadow" : ""}`}
     >
       <button className="cursor-grab touch-none p-1 text-stone-300 hover:text-stone-500" {...attributes} {...listeners} aria-label="ลากเพื่อเรียง">
         <Bars2Icon className="size-4" />
       </button>
       <input type="checkbox" className="size-4 accent-emerald-600" checked={item.done} onChange={(e) => onToggle(e.target.checked)} aria-label={item.text} />
       <input
-        className={`min-w-0 flex-1 rounded border-0 bg-transparent px-1 py-0.5 text-sm outline-none focus:bg-white focus:ring-1 focus:ring-stone-300 ${item.done ? "text-stone-400 line-through" : ""}`}
+        className={`min-w-0 flex-1 rounded border-0 bg-transparent px-1 py-0.5 text-sm outline-none focus:bg-surface focus:ring-1 focus:ring-stone-300 ${item.done ? "text-stone-400 line-through" : ""}`}
         value={text}
         maxLength={300}
         onChange={(e) => setText(e.target.value)}
@@ -269,10 +269,10 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 sm:py-12"
+      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:py-12"
       onPointerDown={(e) => e.target === e.currentTarget && close()}
     >
-      <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-label="รายละเอียดการ์ด">
+      <div className="w-full max-w-xl rounded-2xl bg-surface shadow-xl" role="dialog" aria-modal="true" aria-label="รายละเอียดการ์ด">
         {!card ? (
           <p className="p-8 text-center text-stone-500">กำลังโหลด…</p>
         ) : (
