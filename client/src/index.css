@@ -1,42 +1,88 @@
 @import "tailwindcss";
 @import "./dark.css";
 
-/* Dark mode follows the .dark class on <html> (set by /theme.js before first paint) */
+/* .dark is always on (set by /theme.js); kept so the few dark: variants still apply */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Design system: "a paper desk on an old computer screen".
- * Everything lives in cream windows (thick ink outline + hard shadow) on a green desk;
- * sections are switched with folder tabs. One bold idea (windows + tabs), everything else quiet.
+ * Design system: "บันทึกหลังเที่ยงคืน" — neon-noir Hong Kong in the 90s (docs/design/handoff-diary-theme.md).
+ * Green-black night, cream text, one neon accent (user-selectable, red by default), jade + amber for
+ * atmosphere. Near-square corners, hairline rules, time and metadata set in mono. The memorable thing
+ * is the big time and the letterboxed photo; everything around it stays quiet.
  */
+
+/* Handoff tokens, exactly as specified */
+:root {
+  --bg: #0b1211;
+  --bg-raised: #1a2422;
+  --line: #22302d;
+  --line-strong: #3a4a46;
+  --text: #f2e8d5;
+  --text-muted: #b9c4bf;
+  --text-dim: #9ba8a3;
+  --red: #c8261c;
+  --red-deep: #8e1b14;
+  --red-text: #ff8a75;
+  --jade: #4fb8a0;
+  --jade-text: #7fd1bd;
+  --jade-deep: #123b33;
+  --amber: #f4d35e;
+  --amber-soft: #e9b872;
+  --radius: 2px;
+  --container: 1200px;
+}
+
 @theme {
-  --font-sans: "IBM Plex Sans Thai", "Leelawadee UI", system-ui, sans-serif;
-  --font-display: "Chakra Petch", "IBM Plex Sans Thai", system-ui, sans-serif;
-  /* legacy name used by headings across the app */
-  --font-serif: "Chakra Petch", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-sans: "Prompt", "Leelawadee UI", system-ui, sans-serif;
+  --font-display: "Prompt", "Leelawadee UI", system-ui, sans-serif;
+  --font-serif: "Prompt", "Leelawadee UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Prompt", ui-monospace, monospace;
 
-  --color-desk: #7dbb84;
-  --color-desk-dot: #6faa76;
-  --color-paper: #fbf5e6;
-  --color-surface: #ffffff;
-  --color-ink: #1c2a20;
-  --color-shadow: #1c2a20;
-  --color-title: #23663e;
-  --color-on-title: #fbf5e6;
-  --color-accent: #23663e;
-  --color-highlight: #ffe27a;
-  --color-on-highlight: #1c2a20;
+  /* Tailwind tokens the pages already use, mapped onto the noir palette */
+  --color-desk: var(--bg);
+  --color-paper: var(--bg);
+  --color-surface: var(--bg-raised);
+  --color-ink: var(--text);
+  --color-shadow: #000000;
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-muted: var(--text-muted);
+  --color-dim: var(--text-dim);
+  /* accent: "title" = the solid fill (buttons, selected chips), "accent" = readable accent text.
+     Overridden per user by client/src/appearance.js. */
+  --color-title: var(--red);
+  --color-on-title: #fff4e6;
+  --color-accent: var(--red-text);
+  --color-highlight: var(--amber);
+  --color-on-highlight: var(--bg);
+  /* atmosphere of a night */
+  --color-hot: var(--red);
+  --color-hot-text: var(--red-text);
+  --color-hot-deep: var(--red-deep);
+  --color-calm: var(--jade);
+  --color-calm-text: var(--jade-text);
+  --color-calm-deep: var(--jade-deep);
+  --color-warm: var(--amber);
+  --color-warm-soft: var(--amber-soft);
 
-  --radius-win: 6px;
-  --shadow-win: 4px 4px 0 var(--color-shadow);
-  --shadow-btn: 2px 2px 0 var(--color-shadow);
+  /* near-square corners everywhere (rounded-full stays round for dots) */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+  --radius-win: 2px;
+  --shadow-win: 0 18px 48px rgb(0 0 0 / 0.5);
+  --shadow-btn: none;
 
-  --animate-dialog-in: dialog-in 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-dialog-in: dialog-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-sheet-in: sheet-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-fade-in: fade-in 160ms ease-out;
 
   @keyframes dialog-in {
-    from { opacity: 0; transform: scale(0.96) translateY(4px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
   }
   @keyframes sheet-in {
@@ -49,66 +95,87 @@
   }
 }
 
-:root {
-  /* mood scale, light surfaces (dark values live in dark.css) */
-  --mood-1: #be123c;
-  --mood-2: #fb7185;
-  --mood-3: #78716c;
-  --mood-4: #10b981;
-  --mood-5: #047857;
-}
-
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    background-color: var(--bg);
   }
   body {
     @apply text-ink font-sans antialiased;
-    line-height: 1.65;
-    background-color: var(--color-desk);
-    /* dithered desk */
-    background-image: radial-gradient(var(--color-desk-dot) 1px, transparent 1.3px);
-    background-size: 6px 6px;
+    font-weight: 300;
+    line-height: 1.6;
     min-height: 100dvh;
+    /* two neon glows bleeding into the night */
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(60% 520px at 88% 0%, rgb(200 38 28 / 0.3), rgb(200 38 28 / 0) 70%),
+      radial-gradient(50% 460px at 0% 320px, rgb(31 111 95 / 0.26), rgb(31 111 95 / 0) 70%);
+    background-repeat: no-repeat;
   }
   :focus-visible {
-    outline: 2px solid var(--color-title);
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
-  h1, h2, h3 {
+  h1, h2 {
     font-family: var(--font-display);
-    line-height: 1.3;
+    font-style: italic;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  a:hover {
+    color: var(--color-warm);
   }
   ::selection {
-    background: var(--color-highlight);
-    color: var(--color-on-highlight);
+    background: var(--color-warm);
+    color: var(--bg);
+  }
+  ::placeholder {
+    color: var(--color-stone-400);
   }
 }
 
-/* ---------- windows ---------- */
+/* metadata: entry numbers, dates, times */
+@utility meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+/* ---------- surfaces ---------- */
+/* a raised box that floats above the page (dialogs, popovers, auth) */
 @utility win {
-  border: 2px solid var(--color-ink);
-  border-radius: var(--radius-win);
-  background-color: var(--color-paper);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background-color: var(--bg-raised);
   box-shadow: var(--shadow-win);
 }
 @utility win-title {
-  @apply flex min-h-11 items-center gap-2 px-3 font-display text-[15px] font-semibold;
-  background-color: var(--color-title);
-  color: var(--color-on-title);
-  border-bottom: 2px solid var(--color-ink);
+  @apply flex min-h-12 items-center gap-2 px-4 text-[15px] font-medium;
+  color: var(--text);
+  border-bottom: 1px solid var(--line);
 }
-/* a quieter box inside a window */
+/* a quieter box inside a page */
 @utility panel {
-  @apply rounded-[6px] bg-surface;
-  border: 1.5px solid color-mix(in oklab, var(--color-ink) 75%, transparent);
+  border-radius: var(--radius);
+  background-color: var(--bg-raised);
+  border: 1px solid var(--line);
 }
 
 /* ---------- controls ---------- */
 @utility input {
-  @apply w-full rounded-[6px] bg-surface px-3 py-2 outline-none;
-  border: 1.5px solid color-mix(in oklab, var(--color-ink) 75%, transparent);
+  @apply w-full px-3 py-2 outline-none;
+  border-radius: var(--radius);
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
   min-width: 0; /* date/time inputs on iOS refuse to shrink otherwise */
+  color-scheme: dark;
   transition: box-shadow 120ms, border-color 120ms;
   /* iOS Safari draws date/time inputs natively: centered text, own min width, collapses when empty */
   @supports (-webkit-touch-callout: none) {
@@ -122,58 +189,63 @@
   &::-webkit-datetime-edit { padding: 0; }
   &:focus {
     border-color: var(--color-title);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-title) 22%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-title) 28%, transparent);
   }
 }
 
 @utility btn {
-  @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[6px] px-4 py-2 font-display text-sm font-semibold whitespace-nowrap select-none disabled:pointer-events-none disabled:opacity-50;
-  transition: transform 80ms ease-out, box-shadow 80ms ease-out, background-color 120ms;
+  @apply inline-flex min-h-10 items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium whitespace-nowrap select-none disabled:pointer-events-none disabled:opacity-45;
+  border-radius: var(--radius);
+  transition: transform 80ms ease-out, background-color 120ms, border-color 120ms, color 120ms;
+  &:active { transform: translateY(1px); }
 }
-/* solid green, pressed-in on click */
+/* solid neon accent */
 @utility btn-primary {
   background-color: var(--color-title);
   color: var(--color-on-title);
-  border: 2px solid var(--color-ink);
-  box-shadow: var(--shadow-btn);
-  &:hover { filter: brightness(1.06); }
-  &:active { transform: translate(2px, 2px); box-shadow: none; }
+  border: 1px solid var(--color-title);
+  font-weight: 600;
+  &:hover { filter: brightness(1.12); color: var(--color-on-title); }
 }
-/* white chunky secondary button */
+/* cream hairline */
 @utility btn-outline {
-  background-color: var(--color-surface);
-  color: var(--color-ink);
-  border: 2px solid var(--color-ink);
-  box-shadow: var(--shadow-btn);
-  &:active { transform: translate(2px, 2px); box-shadow: none; }
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--text);
+  &:hover { background-color: color-mix(in oklab, var(--text) 8%, transparent); color: var(--text); }
 }
 @utility btn-ghost {
-  color: var(--color-ink);
-  &:hover { background-color: color-mix(in oklab, var(--color-ink) 7%, transparent); }
-  &:active { background-color: color-mix(in oklab, var(--color-ink) 12%, transparent); }
+  color: var(--text);
+  &:hover { background-color: color-mix(in oklab, var(--text) 7%, transparent); color: var(--text); }
+  &:active { background-color: color-mix(in oklab, var(--text) 12%, transparent); }
 }
 @utility btn-danger {
-  color: var(--color-red-700);
-  &:hover { background-color: var(--color-red-50); }
+  color: var(--red-text);
+  &:hover { background-color: color-mix(in oklab, var(--red) 16%, transparent); color: var(--red-text); }
 }
 
 /* toggle chip (filters, repeat choices, priorities) */
 @utility chip {
-  @apply inline-flex items-center justify-center gap-1 rounded-[4px] px-2.5 py-1.5 font-display text-xs font-medium transition-colors;
-  border: 1.5px solid color-mix(in oklab, var(--color-ink) 45%, transparent);
-  background-color: var(--color-surface);
-  &:hover { border-color: var(--color-ink); }
+  @apply inline-flex items-center justify-center gap-1 px-2.5 py-1.5 text-xs font-normal transition-colors;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  border: 1px solid var(--line-strong);
+  background-color: transparent;
+  &:hover { border-color: var(--text-dim); color: var(--text); }
   &[aria-checked="true"], &[aria-pressed="true"] {
     background-color: var(--color-title);
     color: var(--color-on-title);
-    border-color: var(--color-ink);
+    border-color: var(--color-title);
+    font-weight: 500;
   }
 }
 
-/* Win95-style segmented progress bar: <div class="meter"><div style="width:x%"></div></div> */
+/* segmented progress bar: <div class="meter"><div style="width:x%"></div></div> */
 @utility meter {
-  @apply h-3 overflow-hidden rounded-[3px] bg-surface p-[2px];
-  border: 1.5px solid var(--color-ink);
+  @apply h-3 overflow-hidden p-[2px];
+  border-radius: var(--radius);
+  background-color: var(--bg);
+  border: 1px solid var(--line-strong);
   & > div {
     height: 100%;
     background: repeating-linear-gradient(90deg, var(--color-title) 0 6px, transparent 6px 8px);
@@ -181,22 +253,32 @@
   }
 }
 
+/* photo veil from the handoff: blur + fade to night at the bottom (put on an inset:0 layer over a photo) */
+@utility veil {
+  position: absolute;
+  inset: 0;
+  -webkit-backdrop-filter: blur(var(--veil-blur, 8px));
+  backdrop-filter: blur(var(--veil-blur, 8px));
+  background: linear-gradient(180deg, rgb(11 18 17 / 0) 30%, rgb(11 18 17 / 0.78) 100%);
+  pointer-events: none;
+}
+
 /* ---------- page transitions (react-router viewTransition) ---------- */
 ::view-transition-old(win-body) {
   animation: 120ms ease-in both vt-out;
 }
 ::view-transition-new(win-body) {
-  animation: 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-in;
+  animation: 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-in;
 }
 ::view-transition-group(active-tab) {
   animation-duration: 220ms;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 @keyframes vt-out {
-  to { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 0; }
 }
 @keyframes vt-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

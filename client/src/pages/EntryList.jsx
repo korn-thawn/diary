@@ -111,7 +111,7 @@ export default function EntryList() {
           />
         </div>
         <WindowActions>
-          <Link to={from && from === to ? `/entries/new?date=${from}` : "/entries/new"} viewTransition className="inline-flex min-h-8 items-center gap-1 rounded-[4px] border-2 border-ink bg-paper px-2.5 font-display text-xs font-semibold text-ink shadow-[2px_2px_0_var(--color-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+          <Link to={from && from === to ? `/entries/new?date=${from}` : "/entries/new"} viewTransition className="inline-flex min-h-8 items-center gap-1 rounded-[2px] border border-ink bg-paper px-2.5 font-display text-xs font-semibold text-ink">
             <PlusIcon className="size-4" aria-hidden="true" />
             เขียนบันทึก
           </Link>

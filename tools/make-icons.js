@@ -1,13 +1,13 @@
 // Generates the PWA / home-screen PNG icons into client/public/icons (no dependencies).
 // Run once (or after changing the design):  node tools/make-icons.js
-// Design: cream open book on the title green (retro-desk theme). Maskable variant is full-bleed with a 20% safe zone.
+// Design: cream open book with neon-red lines on the noir night (#0b1211). Maskable variant is full-bleed with a 20% safe zone.
 const fs = require("node:fs");
 const path = require("node:path");
 const zlib = require("node:zlib");
 
-const ACCENT = [0x23, 0x66, 0x3e]; // title green
-const WHITE = [0xfb, 0xf5, 0xe6]; // cream paper
-const LINE = [0x9f, 0xc8, 0xa9];
+const ACCENT = [0x0b, 0x12, 0x11]; // noir night
+const WHITE = [0xf2, 0xe8, 0xd5]; // cream text color
+const LINE = [0xc8, 0x26, 0x1c]; // neon red
 
 // Coverage-based shape test in unit coordinates (0..1). Returns color or null.
 function sample(x, y, { rounded, scale }) {

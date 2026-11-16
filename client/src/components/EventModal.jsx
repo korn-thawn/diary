@@ -78,7 +78,7 @@ export default function EventModal({ event, defaultDate, onSaved, onDeleted, onC
                 role="radio"
                 aria-checked={form.repeat === r.value}
                 onClick={() => set("repeat")(r.value)}
-                className={`flex-1 rounded-lg px-2 py-1.5 text-sm transition ${form.repeat === r.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`}
+                className={`flex-1 rounded-lg px-2 py-1.5 text-sm transition ${form.repeat === r.value ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"}`}
               >
                 {r.label}
               </button>

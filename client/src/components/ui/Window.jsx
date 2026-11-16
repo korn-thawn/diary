@@ -1,48 +1,50 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
-import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 
 const WindowCtx = createContext({ actionsEl: null, setTitle: () => {} });
 
-/** The main app window: green title bar + cream body. Pages add buttons with <WindowActions>. */
-export default function Window({ title, icon: Icon, back, wide, children }) {
+/**
+ * Page frame (noir): back link in mono, italic page title, an actions slot on the right, then the page.
+ * Kept the old "Window" API so pages add buttons with <WindowActions> and rename it with useWindowTitle().
+ */
+export default function Window({ title, back, wide, children }) {
   const navigate = useNavigate();
   const [actionsEl, setActionsEl] = useState(null);
   const [override, setTitle] = useState(null);
   return (
     <WindowCtx.Provider value={{ actionsEl, setTitle }}>
-      <section className={`win relative mx-auto w-full ${wide ? "max-w-none" : "max-w-4xl"}`} aria-label={override || title}>
-        <header className="win-title sticky top-0 z-20 rounded-t-[4px]">
-          {back ? (
-            <button
-              className="-ml-1 flex size-8 shrink-0 items-center justify-center rounded-[4px] hover:bg-white/15"
-              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(back))}
-              aria-label="ย้อนกลับ"
-            >
-              <ChevronLeftIcon className="size-5" />
-            </button>
-          ) : (
-            Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />
-          )}
-          <h1 className="min-w-0 flex-1 truncate py-1 font-display text-[15px] leading-normal font-semibold">{override || title}</h1>
-          <div ref={setActionsEl} className="flex shrink-0 items-center gap-1.5" />
+      <section
+        className={`relative mx-auto w-full px-4 pt-6 sm:px-8 sm:pt-10 ${wide ? "max-w-none" : "max-w-[1200px]"}`}
+        aria-label={override || title}
+      >
+        <header className="mb-6 flex flex-wrap items-end gap-x-4 gap-y-3 border-b border-line pb-4 sm:mb-8">
+          <div className="min-w-0 flex-1">
+            {back && (
+              <button
+                className="meta -ml-1 mb-1 inline-flex min-h-9 items-center px-1 text-calm-text hover:text-warm"
+                onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(back))}
+              >
+                ← กลับ
+              </button>
+            )}
+            <h1 className="truncate py-1 text-[26px] leading-normal sm:text-[32px]">{override || title}</h1>
+          </div>
+          <div ref={setActionsEl} className="flex shrink-0 flex-wrap items-center gap-2" />
         </header>
-        <div className="p-3 sm:p-5" style={{ viewTransitionName: "win-body" }}>
-          {children}
-        </div>
+        <div style={{ viewTransitionName: "win-body" }}>{children}</div>
       </section>
     </WindowCtx.Provider>
   );
 }
 
-/** Render buttons into the current window's title bar. */
+/** Render buttons into the current page header. */
 export function WindowActions({ children }) {
   const { actionsEl } = useContext(WindowCtx);
   return actionsEl ? createPortal(children, actionsEl) : null;
 }
 
-/** Replace the window title while this page is mounted (e.g. the board name). */
+/** Replace the page title while this page is mounted (e.g. the board name). */
 export function useWindowTitle(title) {
   const { setTitle } = useContext(WindowCtx);
   useEffect(() => {
@@ -51,13 +53,10 @@ export function useWindowTitle(title) {
   }, [title, setTitle]);
 }
 
-/** Small button sized for the green title bar. */
-export function TitleButton({ children, className = "", ...props }) {
+/** Button for the page header: the first one on a page usually is the main action. */
+export function TitleButton({ children, className = "", primary = false, ...props }) {
   return (
-    <button
-      className={`inline-flex min-h-8 items-center gap-1 rounded-[4px] border-2 border-ink bg-paper px-2.5 font-display text-xs font-semibold text-ink shadow-[2px_2px_0_var(--color-shadow)] transition-[transform,box-shadow] duration-75 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${className}`}
-      {...props}
-    >
+    <button className={`btn ${primary ? "btn-primary" : "btn-outline"} min-h-10 px-3.5 ${className}`} {...props}>
       {children}
     </button>
   );

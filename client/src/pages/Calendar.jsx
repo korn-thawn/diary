@@ -234,7 +234,7 @@ export default function Calendar() {
                         aria-pressed={isSel}
                         title={label}
                         className={`flex aspect-square w-full flex-col items-center justify-start gap-0.5 rounded-lg pt-1 text-sm transition sm:pt-1.5 ${
-                          isSel ? "border-2 border-ink bg-title text-on-title" : d ? "border-[1.5px] border-ink/25 bg-surface hover:border-ink" : "border-[1.5px] border-transparent hover:border-ink/25"
+                          isSel ? "border border-title bg-title text-on-title" : d ? "border border-line-strong bg-surface hover:border-ink" : "border border-transparent hover:border-line-strong"
                         } ${isToday && !isSel ? "ring-2 ring-accent" : ""}`}
                       >
                         <span className={isToday && !isSel ? "font-semibold text-accent" : ""}>{Number(date.slice(8))}</span>

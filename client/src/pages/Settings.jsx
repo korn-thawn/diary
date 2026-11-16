@@ -18,7 +18,6 @@ import LabelManager from "../components/LabelManager";
 import IcsSettings from "../components/IcsSettings";
 import PhotoUsage from "../components/PhotoUsage";
 import TelegramSettings from "../components/TelegramSettings";
-import ThemePicker from "../components/ThemePicker";
 import AppearanceSettings from "../components/AppearanceSettings";
 import { clearAppearance } from "../appearance";
 
@@ -177,7 +176,6 @@ export default function Settings() {
       </Card>
 
       <Card icon={SwatchIcon} title="หน้าตา">
-        <ThemePicker />
         <AppearanceSettings onAuthError={() => setUser(null)} />
       </Card>
 
@@ -227,7 +225,7 @@ export default function Settings() {
             onChange={(e) => setDel({ ...del, password: e.target.value })}
           />
           <Msg msg={delMsg} />
-          <button className="btn border-2 border-ink bg-red-700 text-white shadow-[2px_2px_0_var(--color-shadow)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none" disabled={!canDelete || delBusy}>
+          <button className="btn border border-ink bg-red-700 text-white" disabled={!canDelete || delBusy}>
             {delBusy ? "กำลังลบ…" : "ลบบัญชีถาวร"}
           </button>
         </form>

@@ -9,3 +9,6 @@ client/dist/
 
 .claude/
 กลับมาทำต่อ
+# UI test artifacts
+tests/ui/.user.json
+tests/ui/out/

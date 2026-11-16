@@ -117,9 +117,9 @@ export default function Today() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <button className="btn btn-ghost px-2" onClick={() => go(shift(date, -1))} aria-label="วันก่อน"><ChevronLeftIcon className="size-5" /></button>
-        <h1 className="font-serif text-xl font-semibold">
+        <h1 className="min-w-0 max-w-[calc(100%-6rem)] truncate py-1 text-lg leading-normal sm:max-w-none sm:text-xl">
           {isToday ? "วันนี้ · " : ""}{formatDate(date, { weekday: "long", day: "numeric", month: "long" })}
         </h1>
         <button className="btn btn-ghost px-2" onClick={() => go(shift(date, 1))} aria-label="วันถัดไป"><ChevronRightIcon className="size-5" /></button>

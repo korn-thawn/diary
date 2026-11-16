@@ -129,7 +129,7 @@ export default function TelegramSettings({ onAuthError }) {
                   type="button"
                   aria-pressed={on}
                   onClick={() => save({ event_days: on ? s.event_days.filter((x) => x !== d) : [...s.event_days, d] })}
-                  className={`rounded-lg px-2 py-1 text-xs transition ${on ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`}
+                  className={`rounded-lg px-2 py-1 text-xs transition ${on ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"}`}
                 >
                   {d === 1 ? "1 วัน" : `${d} วัน`}
                 </button>

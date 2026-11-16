@@ -5,6 +5,8 @@ const { localToday } = require("../util");
 const router = express.Router();
 
 const MOOD_LABELS = { 1: "แย่มาก", 2: "ไม่ค่อยดี", 3: "เฉยๆ", 4: "ดี", 5: "ดีมาก" };
+const ATMOSPHERE_LABELS = { hot: "ร้อนรุ่ม", calm: "นิ่ง", warm: "อบอุ่น" };
+const WEATHER_LABELS = { clear: "แจ่มใส", cloudy: "ครึ้ม", drizzle: "ฝนปรอย", rain: "ฝนตก", storm: "พายุ", fog: "หมอก", hot: "ร้อนอบอ้าว", cold: "หนาว" };
 
 function toMarkdown(username, entries) {
   const out = [`# Diary — ${username}`, "", `ส่งออกเมื่อ ${new Date().toISOString()} · ${entries.length} บันทึก`, ""];
@@ -13,9 +15,13 @@ function toMarkdown(username, entries) {
     out.push(`## ${e.entry_date}${e.title ? ` · ${e.title}` : ""}`, "");
     const meta = [];
     if (e.mood) meta.push(`mood: ${MOOD_LABELS[e.mood]} (${e.mood}/5)`);
+    if (e.atmosphere) meta.push(`บรรยากาศ: ${ATMOSPHERE_LABELS[e.atmosphere]}`);
+    const sky = [WEATHER_LABELS[e.weather], e.temp_c !== null ? `${e.temp_c}°C` : null].filter(Boolean).join(" ");
+    if (sky) meta.push(sky);
     if (e.tags.length) meta.push(e.tags.map((t) => `#${t}`).join(" "));
     if (meta.length) out.push(meta.join(" · "), "");
     out.push(e.body.trimEnd(), "");
+    if (e.caption) out.push(`> ${e.caption}`, "");
   }
   return out.join("\n");
 }
@@ -27,7 +33,7 @@ router.get("/", async (req, res) => {
 
   const { rows } = await db.query(
     `SELECT id::text AS id, to_char(entry_date, 'YYYY-MM-DD') AS entry_date, title, body, mood, tags,
-            created_at, updated_at,
+            atmosphere, weather, temp_c, caption, created_at, updated_at,
             (SELECT count(*)::int FROM photos p WHERE p.entry_id = entries.id) AS photo_count
      FROM entries WHERE user_id = $1
      ORDER BY entry_date, id`,

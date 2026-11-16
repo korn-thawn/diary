@@ -3,19 +3,21 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { AuthProvider } from "./auth";
 import App from "./App";
-// Self-hosted fonts (OFL): only the Thai + Latin subsets and the weights we use
-import "@fontsource/chakra-petch/thai-500.css";
-import "@fontsource/chakra-petch/thai-600.css";
-import "@fontsource/chakra-petch/thai-700.css";
-import "@fontsource/chakra-petch/latin-500.css";
-import "@fontsource/chakra-petch/latin-600.css";
-import "@fontsource/chakra-petch/latin-700.css";
-import "@fontsource/ibm-plex-sans-thai/thai-400.css";
-import "@fontsource/ibm-plex-sans-thai/thai-500.css";
-import "@fontsource/ibm-plex-sans-thai/thai-600.css";
-import "@fontsource/ibm-plex-sans-thai/latin-400.css";
-import "@fontsource/ibm-plex-sans-thai/latin-500.css";
-import "@fontsource/ibm-plex-sans-thai/latin-600.css";
+// Self-hosted fonts (OFL): Prompt (body + italic headings) and IBM Plex Mono (time, metadata)
+import "@fontsource/prompt/thai-300.css";
+import "@fontsource/prompt/thai-400.css";
+import "@fontsource/prompt/thai-500.css";
+import "@fontsource/prompt/thai-600.css";
+import "@fontsource/prompt/thai-500-italic.css";
+import "@fontsource/prompt/thai-600-italic.css";
+import "@fontsource/prompt/latin-300.css";
+import "@fontsource/prompt/latin-400.css";
+import "@fontsource/prompt/latin-500.css";
+import "@fontsource/prompt/latin-600.css";
+import "@fontsource/prompt/latin-500-italic.css";
+import "@fontsource/prompt/latin-600-italic.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "@fontsource/ibm-plex-mono/latin-500.css";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(

@@ -94,7 +94,7 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
     }
   }
 
-  const chip = (on) => `rounded-lg px-2.5 py-1.5 text-xs transition ${on ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`;
+  const chip = (on) => `rounded-lg px-2.5 py-1.5 text-xs transition ${on ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"}`;
 
   return (
     <Dialog title={meeting ? "แก้การประชุม (ทุกครั้ง)" : "เพิ่มการประชุม"} icon={UsersIcon} onClose={onClose}>
@@ -138,7 +138,7 @@ export default function MeetingModal({ meeting, defaultDate, onSaved, onDeleted,
           {weekly && (
             <div className="flex gap-1" role="group" aria-label="วันในสัปดาห์">
               {WEEKDAYS.map((d) => (
-                <button key={d.value} type="button" aria-pressed={days.includes(d.value)} title={d.label} className={`size-9 rounded-full text-xs transition ${days.includes(d.value) ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"}`} onClick={() => toggleDay(d.value)}>
+                <button key={d.value} type="button" aria-pressed={days.includes(d.value)} title={d.label} className={`size-9 rounded-full text-xs transition ${days.includes(d.value) ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"}`} onClick={() => toggleDay(d.value)}>
                   {d.short}
                 </button>
               ))}

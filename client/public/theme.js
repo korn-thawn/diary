@@ -1,19 +1,18 @@
-// Applies the saved theme before first paint (loaded synchronously in <head>, CSP-safe: same origin).
-// - "diary-theme": "system" (default) | "light" | "dark"
-// - "diary-appearance": { css, paper: { light, dark } } built by client/src/appearance.js from the
-//   user's colors / fonts / text size (cached so there is no flash of the default look)
+// Runs before first paint (loaded synchronously in <head>, CSP-safe: same origin).
+// The app is dark-only (noir theme): always sets .dark, and injects the user's cached accent / text
+// size CSS ("diary-appearance": { css }) built by client/src/appearance.js, so nothing flashes.
 (function () {
-  var KEY = "diary-theme";
   var USER = "diary-appearance";
-  var media = window.matchMedia("(prefers-color-scheme: dark)");
   var user = null;
+  document.documentElement.classList.add("dark");
 
   function readUser() {
     try { user = JSON.parse(localStorage.getItem(USER) || "null"); } catch (e) { user = null; }
   }
   function applyUser() {
     var el = document.getElementById("user-theme");
-    var css = user && typeof user.css === "string" ? user.css : "";
+    // v2 = noir; older caches hold retro-desk presets and are ignored
+    var css = user && user.v === 2 && typeof user.css === "string" ? user.css : "";
     if (!css) { if (el) el.remove(); return; }
     if (!el) {
       el = document.createElement("style");
@@ -22,24 +21,11 @@
     }
     if (el.textContent !== css) el.textContent = css;
   }
-  function apply() {
-    var pref = "system";
-    try { pref = localStorage.getItem(KEY) || "system"; } catch (e) {}
-    var dark = pref === "dark" || (pref === "system" && media.matches);
-    document.documentElement.classList.toggle("dark", dark);
-    var paper = user && user.paper ? (dark ? user.paper.dark : user.paper.light) : null;
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", paper || (dark ? "#1c2a21" : "#fbf5e6"));
-  }
   readUser();
   applyUser();
-  apply();
-  if (media.addEventListener) media.addEventListener("change", apply);
-  window.addEventListener("storage", function () { readUser(); applyUser(); apply(); }); // other tabs
+  window.addEventListener("storage", function () { readUser(); applyUser(); }); // other tabs
   window.diaryTheme = {
-    get: function () { try { return localStorage.getItem(KEY) || "system"; } catch (e) { return "system"; } },
-    set: function (pref) { try { localStorage.setItem(KEY, pref); } catch (e) {} apply(); },
     // called by the app with the freshly built appearance (null = back to default)
-    applyUser: function (next) { user = next; applyUser(); apply(); },
+    applyUser: function (next) { user = next; applyUser(); },
   };
 })();

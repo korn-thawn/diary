@@ -45,7 +45,7 @@ export default function Dialog({ title, icon: Icon, onClose, children, size = "m
   const width = size === "lg" ? "sm:max-w-2xl" : size === "sm" ? "sm:max-w-sm" : "sm:max-w-lg";
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/45 sm:items-start sm:overflow-y-auto sm:p-6 sm:pt-[8vh]"
+      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-black/60 backdrop-blur-[2px] sm:items-start sm:overflow-y-auto sm:p-6 sm:pt-[8vh]"
       onPointerDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
@@ -54,13 +54,13 @@ export default function Dialog({ title, icon: Icon, onClose, children, size = "m
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${id}-t`}
-        className={`win flex max-h-[92dvh] w-full animate-sheet-in flex-col overflow-hidden rounded-b-none outline-none sm:max-h-none sm:animate-dialog-in sm:overflow-visible sm:rounded-b-[6px] ${width}`}
+        className={`win flex max-h-[92dvh] w-full animate-sheet-in flex-col overflow-hidden rounded-b-none outline-none sm:max-h-none sm:animate-dialog-in sm:overflow-visible ${width}`}
       >
-        <header className="win-title shrink-0 rounded-t-[4px]">
+        <header className="win-title shrink-0">
           {Icon && <Icon className="size-5 shrink-0" aria-hidden="true" />}
-          <h2 id={`${id}-t`} className="min-w-0 flex-1 truncate py-1 font-display text-[15px] leading-normal font-semibold">{title}</h2>
+          <h2 id={`${id}-t`} className="min-w-0 flex-1 truncate py-1 text-lg leading-normal">{title}</h2>
           {titleExtra}
-          <button data-close className="-mr-1 flex size-8 items-center justify-center rounded-[4px] hover:bg-white/15" onClick={onClose} aria-label="ปิด">
+          <button data-close className="-mr-1 flex size-8 items-center justify-center rounded-[2px] hover:bg-white/15" onClick={onClose} aria-label="ปิด">
             <XMarkIcon className="size-5" />
           </button>
         </header>

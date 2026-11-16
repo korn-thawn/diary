@@ -31,15 +31,15 @@ export function useJustDragged() {
 }
 
 // Desktop-style folder icon (colour = board colour, board icon on the front)
+// Hairline folder in the board's color, glowing faintly like a neon sign at night
 function FolderGlyph({ colorClass, Icon }) {
   return (
     <span className={`relative block h-14 w-[4.5rem] ${colorClass}`} aria-hidden="true">
-      <svg viewBox="0 0 72 56" className="absolute inset-0 size-full" fill="none">
-        <path d="M3 10a4 4 0 0 1 4-4h18l6 6h34a4 4 0 0 1 4 4v34a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" stroke="var(--color-ink)" strokeWidth="2.5" />
-        <path d="M3 20h66v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="currentColor" stroke="var(--color-ink)" strokeWidth="2.5" />
-        <path d="M3 20h66v30a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" fill="#ffffff" fillOpacity=".2" />
+      <svg viewBox="0 0 72 56" className="absolute inset-0 size-full drop-shadow-[0_0_6px_currentColor]" fill="none">
+        <path d="M3 10a2 2 0 0 1 2-2h19l6 6h37a2 2 0 0 1 2 2v34a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor" fillOpacity=".08" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 21h66" stroke="currentColor" strokeWidth="1.5" strokeOpacity=".6" />
       </svg>
-      <Icon className="absolute top-[47%] left-1/2 size-6 -translate-x-1/2 text-white" />
+      <Icon className="absolute top-[52%] left-1/2 size-6 -translate-x-1/2" />
     </span>
   );
 }
@@ -60,10 +60,10 @@ function BoardTile({ board, justDragged }) {
         to={`/boards/${board.id}`}
         viewTransition
         onClick={(e) => justDragged() && e.preventDefault()}
-        className="group flex flex-col items-center gap-1.5 rounded-[6px] px-1 py-3 text-center outline-none focus-visible:bg-highlight/60"
+        className="group flex flex-col items-center gap-1.5 rounded-[2px] px-1 py-3 text-center outline-none hover:text-ink focus-visible:bg-surface"
       >
         <FolderGlyph colorClass={c.text} Icon={Icon} />
-        <span className="line-clamp-2 rounded-[3px] px-1 font-display text-sm leading-snug font-semibold group-hover:bg-highlight group-hover:text-on-highlight">{board.name}</span>
+        <span className="line-clamp-2 px-1 text-sm leading-snug font-medium transition-colors group-hover:text-warm">{board.name}</span>
         <span className="text-xs text-stone-500">{board.open_count ? `ค้าง ${board.open_count} งาน` : "ไม่มีงานค้าง"}</span>
         {board.overdue_count > 0 && (
           <span className="flex items-center gap-1 text-xs font-medium text-red-700">

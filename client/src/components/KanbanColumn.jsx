@@ -105,7 +105,7 @@ export default function KanbanColumn({ column, cards, dragDisabled, onAddCard, o
     <section
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={`flex max-h-[calc(100dvh-14rem)] w-72 shrink-0 snap-start flex-col rounded-[6px] border-[1.5px] border-ink/60 bg-[color-mix(in_oklab,var(--color-ink)_5%,var(--color-paper))] ${isDragging ? "opacity-40" : ""}`}
+      className={`flex max-h-[calc(100dvh-14rem)] w-72 shrink-0 snap-start flex-col rounded-[2px] border border-line-strong bg-[color-mix(in_oklab,var(--color-ink)_5%,var(--color-paper))] ${isDragging ? "opacity-40" : ""}`}
       aria-label={`คอลัมน์ ${column.name}`}
     >
       <header className="flex items-center gap-2 px-3 pt-3 pb-2">

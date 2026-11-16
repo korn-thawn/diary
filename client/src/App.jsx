@@ -15,9 +15,10 @@ import Board from "./pages/Board";
 import Events from "./pages/Events";
 import Today from "./pages/Today";
 import Meetings from "./pages/Meetings";
+import Home from "./pages/Home";
 import OccurrenceModal from "./components/OccurrenceModal";
 import Window from "./components/ui/Window";
-import { Dock, FolderTabs, MenuBar } from "./components/ui/Chrome";
+import { Dock, SiteFooter, SiteHeader } from "./components/ui/Chrome";
 
 // Shown while the device is offline (the installed app can still open its cached shell)
 function OfflineBanner() {
@@ -30,7 +31,7 @@ function OfflineBanner() {
   }, []);
   if (online) return null;
   return (
-    <div className="flex items-center justify-center gap-2 border-b-2 border-ink bg-ink px-4 py-1.5 text-center text-sm text-paper" role="status">
+    <div className="flex items-center justify-center gap-2 border-b border-ink bg-ink px-4 py-1.5 text-center text-sm text-paper" role="status">
       <SignalSlashIcon className="size-4 shrink-0" aria-hidden="true" />
       ออฟไลน์อยู่ ข้อมูลจะโหลดและบันทึกได้เมื่อกลับมาออนไลน์
     </div>
@@ -42,7 +43,7 @@ function InsecureBanner() {
   const local = hostname === "localhost" || hostname === "127.0.0.1";
   if (protocol !== "http:" || local) return null;
   return (
-    <div className="flex items-center justify-center gap-2 border-b-2 border-ink bg-highlight px-4 py-1.5 text-center text-sm text-on-highlight">
+    <div className="flex items-center justify-center gap-2 border-b border-ink bg-highlight px-4 py-1.5 text-center text-sm text-on-highlight">
       <ExclamationTriangleIcon className="size-4 shrink-0" aria-hidden="true" />
       เว็บนี้ยังไม่มี HTTPS ใช้รหัสผ่านทิ้งสำหรับทดสอบเท่านั้น
     </div>
@@ -82,25 +83,28 @@ export default function App() {
   const { user } = useAuth();
   const win = windowFor(pathname);
   const isAuthPage = AUTH_PATHS.includes(pathname);
+  const isHome = pathname === "/";
 
   return (
     <div className={`min-h-dvh ${user && !isAuthPage ? "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10" : "pb-10"}`}>
       <OfflineBanner />
-      <MenuBar />
+      <SiteHeader />
       <InsecureBanner />
       {isAuthPage ? (
-        <main className="px-3 pt-8 sm:pt-16">
+        <main className="px-4 pt-10 sm:pt-20">
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Routes>
         </main>
       ) : (
-        <main className="px-2 pt-3 sm:px-4 md:pt-6">
-          {user && <FolderTabs wide={win.wide} />}
-          <Window key={win.title + (win.back || "")} title={win.title} icon={win.icon} back={win.back} wide={win.wide}>
+        <main>
+          {isHome ? (
+            protect(<Home />)
+          ) : (
+          <Window key={win.title + (win.back || "")} title={win.title} back={win.back} wide={win.wide}>
             <Routes>
-              <Route path="/" element={protect(<EntryList />)} />
+              <Route path="/entries" element={protect(<EntryList />)} />
               <Route path="/entries/new" element={protect(<EntryEditor />)} />
               <Route path="/entries/:id" element={protect(<EntryEditor />)} />
               <Route path="/boards" element={protect(<Boards />)} />
@@ -114,9 +118,11 @@ export default function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Window>
+          )}
           <MeetingOccurrenceRoute />
         </main>
       )}
+      {user && !isAuthPage && <SiteFooter />}
       {user && !isAuthPage && <Dock />}
     </div>
   );

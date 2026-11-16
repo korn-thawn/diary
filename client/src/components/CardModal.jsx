@@ -267,7 +267,7 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                       aria-checked={card.priority === p.value}
                       onClick={() => patch({ priority: p.value })}
                       className={`flex-1 rounded-lg px-2 py-1.5 text-xs transition ${
-                        card.priority === p.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
+                        card.priority === p.value ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"
                       }`}
                     >
                       {p.label}
@@ -288,7 +288,7 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
                     disabled={!card.due_date && r.value !== null}
                     onClick={() => patch({ recurrence: r.value })}
                     className={`rounded-lg px-2.5 py-1.5 text-xs transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                      card.recurrence === r.value ? "border-[1.5px] border-ink bg-title text-on-title" : "border-[1.5px] border-ink/35 bg-surface text-ink hover:border-ink"
+                      card.recurrence === r.value ? "border border-title bg-title text-on-title font-medium" : "border border-line-strong text-muted hover:border-dim hover:text-ink"
                     }`}
                   >
                     {r.label}
@@ -368,7 +368,7 @@ export default function CardModal({ cardId, labels, onLabelsChange, onChanged, o
               </form>
             </Section>
 
-            <div className="flex items-center justify-between border-t-[1.5px] border-ink/15 pt-4 text-xs text-stone-400">
+            <div className="flex items-center justify-between border-t-[1.5px] border-line pt-4 text-xs text-stone-400">
               <span>สร้างเมื่อ {new Date(card.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}</span>
               <button className="btn btn-danger px-2 py-1 text-sm" onClick={deleteCard}>
                 <TrashIcon className="size-4" aria-hidden="true" /> ลบการ์ด

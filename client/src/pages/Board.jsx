@@ -337,7 +337,7 @@ export default function Board() {
   return (
     <div>
       <div className="mx-auto mb-4 flex max-w-none flex-wrap items-center gap-2">
-        <span className={`flex size-9 items-center justify-center rounded-[6px] border-[1.5px] border-ink ${color(board.color).soft}`}>
+        <span className={`flex size-9 items-center justify-center rounded-[2px] border border-ink ${color(board.color).soft}`}>
           <Icon className="size-5" aria-hidden="true" />
         </span>
         {editingName ? (
@@ -354,7 +354,7 @@ export default function Board() {
             <PencilSquareIcon className="size-4" aria-hidden="true" /> เปลี่ยนชื่อบอร์ด
           </button>
         )}
-        {board.archived && <span className="rounded-[4px] border-[1.5px] border-ink/40 bg-highlight px-2 py-0.5 text-xs text-on-highlight">เก็บถาวร</span>}
+        {board.archived && <span className="rounded-[2px] border border-line-strong bg-highlight px-2 py-0.5 text-xs text-on-highlight">เก็บถาวร</span>}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <div className="relative">
             <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
@@ -431,7 +431,7 @@ export default function Board() {
             ))}
           </SortableContext>
           <button
-            className="flex h-12 w-60 shrink-0 items-center justify-center gap-1 rounded-[6px] border-2 border-dashed border-ink/40 font-display text-sm font-semibold text-ink/70 hover:border-ink hover:text-ink"
+            className="flex h-12 w-60 shrink-0 items-center justify-center gap-1 rounded-[2px] border border-dashed border-line-strong font-display text-sm font-semibold text-ink/70 hover:border-ink hover:text-ink"
             onClick={addColumn}
           >
             <PlusIcon className="size-4" aria-hidden="true" />
@@ -472,7 +472,7 @@ export default function Board() {
       )}
 
       {toast && (
-        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-[6px] border-2 border-ink bg-highlight px-4 py-2 text-sm text-on-highlight shadow-[3px_3px_0_var(--color-shadow)]" role="status">
+        <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-[2px] border border-ink bg-highlight px-4 py-2 text-sm text-on-highlight" role="status">
           {toast}
         </div>
       )}
