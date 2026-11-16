@@ -4,6 +4,7 @@ import { FireIcon, TrophyIcon, BookOpenIcon, CalendarDaysIcon } from "@heroicons
 import { api, formatDate, MOODS, moodOf, today } from "../api";
 import { useAuth } from "../auth";
 import { MoodDot } from "../components/Mood";
+import Loading from "../components/ui/Loading";
 
 const DAY = 86400000;
 const toDays = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) / DAY;
@@ -21,7 +22,7 @@ export default function Stats() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!data) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
+  if (!data) return <Loading />;
 
   const { totals, streak } = data;
   if (!totals.entries) {

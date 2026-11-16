@@ -7,7 +7,7 @@ import NightArt from "./NightArt";
  */
 export default function Cover({ entry, hero = false, className = "" }) {
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden ${className}`} data-vt-cover="">
       {entry.cover_id ? (
         <img
           src={photoUrl(entry.cover_id, !hero)}
@@ -15,6 +15,9 @@ export default function Cover({ entry, hero = false, className = "" }) {
           className="absolute inset-0 size-full object-cover"
           loading={hero ? "eager" : "lazy"}
           decoding="async"
+          data-fade=""
+          ref={(img) => { if (img?.complete && img.naturalWidth) img.dataset.loaded = ""; }}
+          onLoad={(e) => { e.currentTarget.dataset.loaded = ""; }}
         />
       ) : (
         <NightArt seed={entry.id} atmosphere={entry.atmosphere} />

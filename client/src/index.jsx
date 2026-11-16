@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router";
+import { RouterProvider, createBrowserRouter } from "react-router";
 import { AuthProvider } from "./auth";
+import "./motion";
 import App from "./App";
 // Self-hosted fonts (OFL): Prompt (body + italic headings) and IBM Plex Mono (time, metadata)
 import "@fontsource/prompt/thai-300.css";
@@ -20,13 +21,22 @@ import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import "./index.css";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <BrowserRouter>
+// A data router (one splat route; App keeps its own <Routes>) so <Link viewTransition> and
+// navigate(..., { viewTransition: true }) really run the View Transitions API — BrowserRouter ignores them.
+const router = createBrowserRouter([
+  {
+    path: "*",
+    element: (
       <AuthProvider>
         <App />
       </AuthProvider>
-    </BrowserRouter>
+    ),
+  },
+]);
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <RouterProvider router={router} />
   </StrictMode>
 );
 

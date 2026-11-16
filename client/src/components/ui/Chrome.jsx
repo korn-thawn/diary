@@ -22,7 +22,7 @@ export function SiteHeader() {
   const { user } = useAuth();
   const { pathname } = useLocation();
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[rgb(11_18_17/0.86)] backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line bg-[rgb(11_18_17/0.86)] backdrop-blur-md" style={{ viewTransitionName: "site-header" }}>
       <div className="mx-auto flex min-h-16 max-w-[1200px] items-center gap-4 px-4 sm:px-8">
         <Link to={user ? "/" : "/login"} viewTransition className="font-display text-[19px] font-semibold italic text-ink sm:text-2xl">
           {SITE_NAME}
@@ -38,12 +38,12 @@ export function SiteHeader() {
                     to={to}
                     viewTransition
                     aria-current={active ? "page" : undefined}
-                    style={active ? { viewTransitionName: "active-tab" } : undefined}
-                    className={`relative py-2.5 text-[15px] transition-colors ${
-                      active ? "text-ink after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:bg-title" : "text-muted"
-                    }`}
+                    className={`relative py-2.5 text-[15px] transition-colors duration-200 ${active ? "text-ink" : "text-muted"}`}
                   >
                     {label}
+                    {active && (
+                      <span aria-hidden="true" className="absolute inset-x-0 bottom-1 h-0.5 bg-title" style={{ viewTransitionName: "nav-underline" }} />
+                    )}
                   </NavLink>
                 );
               })}
@@ -81,26 +81,28 @@ export function Dock() {
   const [more, setMore] = useState(false);
   const moreActive = MORE.some((m) => pathname.startsWith(m.to)) && !DOCK.some((d) => d.match(pathname));
   const item = (active) =>
-    `relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] ${
-      active ? "text-accent before:absolute before:inset-x-5 before:top-0 before:h-0.5 before:bg-title" : "text-muted"
-    }`;
+    `relative flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px] transition-colors duration-200 ${active ? "text-accent" : "text-muted"}`;
+  const indicator = <span aria-hidden="true" className="absolute inset-x-5 top-0 h-0.5 bg-title" style={{ viewTransitionName: "dock-indicator" }} />;
   return (
     <>
       <nav
         className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-[rgb(11_18_17/0.92)] pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+        style={{ viewTransitionName: "dock" }}
         aria-label="เมนูหลัก"
       >
         {DOCK.map(({ to, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <NavLink key={to} to={to} viewTransition className={item(active)} aria-current={active ? "page" : undefined}>
-              <Icon className="size-6" aria-hidden="true" />
+              {active && indicator}
+              <Icon className={`size-6 ${active ? "dock-pop" : ""}`} aria-hidden="true" />
               {label}
             </NavLink>
           );
         })}
         <button className={item(moreActive)} onClick={() => setMore(true)} aria-haspopup="dialog">
-          <EllipsisHorizontalIcon className="size-6" aria-hidden="true" />
+          {moreActive && indicator}
+          <EllipsisHorizontalIcon className={`size-6 ${moreActive ? "dock-pop" : ""}`} aria-hidden="true" />
           เพิ่มเติม
         </button>
       </nav>

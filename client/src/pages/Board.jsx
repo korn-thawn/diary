@@ -31,6 +31,7 @@ import Popover, { MenuItem } from "../components/Popover";
 import Dialog from "../components/ui/Dialog";
 import { useWindowTitle } from "../components/ui/Window";
 import { ColorPicker, IconPicker } from "../components/Pickers";
+import Loading from "../components/ui/Loading";
 
 const cardKey = (id) => `card-${id}`;
 const colKey = (id) => `col-${id}`;
@@ -327,7 +328,7 @@ export default function Board() {
   }
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!board) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
+  if (!board) return <Loading />;
 
   const Icon = boardIcon(board.icon);
   const face = { labelsById, todayStr };
@@ -438,7 +439,7 @@ export default function Board() {
             เพิ่มคอลัมน์
           </button>
         </div>
-        <DragOverlay>
+        <DragOverlay dropAnimation={{ duration: 280, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }}>
           {activeCard ? (
             <div className="w-68"><CardFace card={activeCard} {...face} done={activeCardDone} dragging /></div>
           ) : active?.type === "column" ? (

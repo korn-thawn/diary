@@ -9,6 +9,7 @@ import { AtmospherePicker, WeatherPicker } from "../components/Atmosphere";
 import { BigTime } from "../components/home/HeroEntry";
 import PhotoManager from "../components/Photos";
 import { timeOf } from "../night";
+import Loading from "../components/ui/Loading";
 
 function Field({ label, hint, children }) {
   return (
@@ -96,7 +97,7 @@ export default function EntryEditor() {
       } else {
         await api(`/entries/${id}`, { method: "PUT", body });
       }
-      navigate("/");
+      navigate("/", { viewTransition: true });
     } catch (err) {
       handleError(err);
     } finally {
@@ -108,20 +109,24 @@ export default function EntryEditor() {
     if (!confirm("ลบบันทึกนี้? ลบแล้วกู้คืนไม่ได้")) return;
     try {
       await api(`/entries/${id}`, { method: "DELETE" });
-      navigate("/");
+      navigate("/", { viewTransition: true });
     } catch (err) {
       handleError(err);
     }
   }
 
-  if (loading) return <p className="meta text-dim">กำลังโหลด…</p>;
+  if (loading) return <Loading lines={5} className="mx-auto max-w-3xl" />;
 
   return (
     <form onSubmit={save} className="mx-auto max-w-3xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="meta mb-2 text-calm-text">{isNew ? "เวลาที่เริ่มเขียน" : "เขียนเมื่อ"}</p>
-          <BigTime value={timeOf(form.created_at || now)} className="text-[56px] sm:text-[80px]" />
+          <BigTime
+            value={timeOf(form.created_at || now)}
+            className="neon-glow text-[56px] sm:text-[80px]"
+            style={isNew ? undefined : { viewTransitionName: `entry-time-${id}`, viewTransitionClass: "entry-time" }}
+          />
         </div>
         <label className="block">
           <span className="meta mb-1 block text-dim">คืนวันที่</span>

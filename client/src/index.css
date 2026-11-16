@@ -263,31 +263,212 @@
   pointer-events: none;
 }
 
-/* ---------- page transitions (react-router viewTransition) ---------- */
+/* ======================================================================
+ * Motion — "film cut": quick, soft, built from blur / fade / neon light.
+ * One orchestrated moment (the home intro); everything else answers an action.
+ * Tokens: --ease-out-expo / --ease-soft, --dur-fast / --dur / --dur-slow. All off with reduced motion.
+ * ====================================================================== */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 420ms;
+  --vt-x: 14px; /* forward: new page drifts in from the right */
+}
+:root[data-nav="back"] {
+  --vt-x: -14px;
+}
+
+/* ---------- page change (react-router viewTransition) ---------- */
+/* the page itself doesn't crossfade: header and dock stay put, only the content cuts */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-group(site-header),
+::view-transition-group(dock) {
+  animation: none;
+}
+::view-transition-group(win-body) {
+  animation: none;
+}
+/* a real cut: the old page leaves at once (it may be scrolled, and the new page starts at the top,
+   so fading it out would flash the wrong part of it), the new one comes into focus */
 ::view-transition-old(win-body) {
-  animation: 120ms ease-in both vt-out;
+  display: none;
 }
 ::view-transition-new(win-body) {
-  animation: 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-in;
-}
-::view-transition-group(active-tab) {
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: 300ms var(--ease-out-expo) both vt-in;
 }
 @keyframes vt-out {
-  to { opacity: 0; }
+  to { opacity: 0; filter: blur(4px); }
 }
 @keyframes vt-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; filter: blur(6px); transform: translate(var(--vt-x), 10px); }
 }
+
+/* shared element: an entry's time flies from the card / hero into the big time on the entry page */
+::view-transition-group(*.entry-time) {
+  animation-duration: 380ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+/* a name that only exists on one side behaves like the page: gone at once / comes into focus */
+::view-transition-old(*.entry-time):only-child {
+  display: none;
+}
+::view-transition-new(*.entry-time):only-child {
+  animation: 300ms var(--ease-out-expo) both vt-in;
+}
+
+/* nav underline / dock indicator glide to the new item */
+::view-transition-group(nav-underline),
+::view-transition-group(dock-indicator) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+/* month change in the mood calendar: only the grid slides, the page stays */
+html[data-vt="month"]::view-transition-old(win-body),
+html[data-vt="month"]::view-transition-new(win-body) {
+  animation: none;
+}
+html[data-vt="month"]::view-transition-old(mood-grid) {
+  animation: 180ms ease-in both month-out;
+}
+html[data-vt="month"]::view-transition-new(mood-grid) {
+  animation: 320ms var(--ease-out-expo) both month-in;
+}
+html[data-month-dir="prev"] { --month-x: -1; }
+html[data-month-dir="next"] { --month-x: 1; }
+@keyframes month-out {
+  to { opacity: 0; transform: translateX(calc(var(--month-x, 1) * -24px)); filter: blur(3px); }
+}
+@keyframes month-in {
+  from { opacity: 0; transform: translateX(calc(var(--month-x, 1) * 24px)); filter: blur(3px); }
+}
+
+/* ---------- home intro (once per session) ---------- */
+[data-intro] .intro-meta { animation: 500ms ease-out both fade-up; }
+[data-intro] .intro-time { animation: 1100ms linear 120ms both neon-on; }
+[data-intro] .intro-rise { animation: 600ms var(--ease-out-expo) both fade-up; animation-delay: calc(520ms + var(--i, 0) * 70ms); }
+[data-intro] .intro-film { animation: 900ms var(--ease-out-expo) 260ms both letterbox-open; }
+[data-intro] .intro-caption { animation: 700ms ease-out 1000ms both subtitle-in; }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+}
+/* a neon tube catching: two flickers, then the glow settles */
+@keyframes neon-on {
+  0% { opacity: 0; text-shadow: none; }
+  8% { opacity: 0.9; }
+  12% { opacity: 0.15; }
+  20% { opacity: 1; }
+  24% { opacity: 0.3; }
+  34% { opacity: 1; text-shadow: 0 0 0 transparent; }
+  70% { text-shadow: 0 0 28px color-mix(in oklab, var(--color-title) 55%, transparent); }
+  100% { opacity: 1; text-shadow: 0 0 18px color-mix(in oklab, var(--color-title) 35%, transparent); }
+}
+@keyframes letterbox-open {
+  from { clip-path: inset(50% 0 50% 0); filter: brightness(1.6); }
+  60% { filter: brightness(1.1); }
+  to { clip-path: inset(0 0 0 0); filter: none; }
+}
+@keyframes subtitle-in {
+  from { opacity: 0; letter-spacing: 0.06em; }
+}
+/* the big time keeps a faint glow after the intro too */
+.neon-glow {
+  text-shadow: 0 0 18px color-mix(in oklab, var(--color-title) 35%, transparent);
+}
+
+/* ---------- reveal on scroll (only when motion.js runs) ---------- */
+.motion-ok [data-reveal]:not([data-revealed]) > * {
+  opacity: 0;
+}
+.motion-ok [data-reveal][data-revealed] > * {
+  animation: 560ms var(--ease-out-expo) both fade-up;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+/* mood squares light up one night after another, like windows in a building at night */
+.motion-ok [data-reveal="lights"][data-revealed] > * {
+  animation: 420ms ease-out both light-on;
+  animation-delay: calc(var(--i, 0) * 14ms);
+}
+@keyframes light-on {
+  from { opacity: 0; filter: brightness(2); }
+  40% { opacity: 1; }
+}
+
+/* ---------- photos fade in from blur when they finish loading ---------- */
+img[data-fade] {
+  opacity: 0;
+  filter: blur(8px);
+  transition: opacity var(--dur-slow) ease-out, filter var(--dur-slow) ease-out;
+}
+img[data-fade][data-loaded] {
+  opacity: 1;
+  filter: none;
+}
+
+/* ---------- dialog / bottom sheet ---------- */
+.dialog-backdrop {
+  background: rgb(0 0 0 / 0.6);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: var(--dur) ease-out both fade-in;
+}
+.dialog-backdrop.is-closing {
+  animation: 180ms ease-in both fade-out;
+}
+.dialog-panel {
+  animation: 320ms var(--ease-out-expo) both sheet-up;
+  transition: transform 260ms var(--ease-out-expo);
+}
+.dialog-panel.is-closing {
+  animation: 180ms ease-in both sheet-down;
+}
+@media (min-width: 640px) {
+  .dialog-panel { animation: 260ms var(--ease-out-expo) both pop-in; }
+  .dialog-panel.is-closing { animation: 160ms ease-in both pop-out; }
+}
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes sheet-down { to { transform: translateY(100%); } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(4px); } }
+@keyframes pop-out { to { opacity: 0; transform: translateY(6px) scale(0.99); filter: blur(2px); } }
+
+/* ---------- small things ---------- */
+/* status text that appears after an action ("บันทึกแล้ว") */
+[role="status"]:not(:empty) { animation: var(--dur) ease-out both fade-in; }
+/* loading placeholders: slow breathing lines instead of "กำลังโหลด…" */
+.skeleton {
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  animation: breathe 1.6s var(--ease-soft) infinite alternate;
+}
+@keyframes breathe { from { opacity: 0.45; } to { opacity: 0.9; } }
+/* the dock icon that was just chosen settles in */
+.dock-pop { animation: 360ms var(--ease-out-expo) both dock-pop; }
+@keyframes dock-pop { from { transform: scale(0.86); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
     animation: none !important;
   }
+  .motion-ok [data-reveal] > *, img[data-fade] { opacity: 1 !important; filter: none !important; }
+}
+@keyframes fade-in { from { opacity: 0; } }
+
+/* WebKit fallback (no View Transitions): each new page fades in from blur on mount instead */
+.no-vt .page-enter {
+  animation: 320ms var(--ease-out-expo) both vt-in;
+}
+@media (prefers-reduced-motion: reduce) {
+  .no-vt .page-enter { animation: none; }
 }

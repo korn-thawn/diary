@@ -79,6 +79,9 @@ function SavedThumb({ photo, index, onOpen, onDelete }) {
         width={photo.width}
         height={photo.height}
         className="size-full cursor-zoom-in object-cover"
+        data-fade=""
+        ref={(img) => { if (img?.complete && img.naturalWidth) img.dataset.loaded = ""; }}
+        onLoad={(e) => { e.currentTarget.dataset.loaded = ""; }}
         onClick={() => onOpen(index)}
         draggable={false}
       />

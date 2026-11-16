@@ -9,6 +9,7 @@ import { useAuth } from "../auth";
 import { boardIcon, color } from "../palette";
 import { ColorPicker, IconPicker } from "../components/Pickers";
 import { TitleButton, WindowActions } from "../components/ui/Window";
+import Loading from "../components/ui/Loading";
 
 export function useDndSensors() {
   return useSensors(
@@ -135,7 +136,7 @@ export default function Boards() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!boards) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
+  if (!boards) return <Loading />;
 
   const active = boards.filter((b) => !b.archived);
   const archived = boards.filter((b) => b.archived);
@@ -167,7 +168,7 @@ export default function Boards() {
       )}
 
       {creating && (
-        <NewBoardForm onCancel={() => setCreating(false)} onCreated={(b) => navigate(`/boards/${b.id}`)} />
+        <NewBoardForm onCancel={() => setCreating(false)} onCreated={(b) => navigate(`/boards/${b.id}`, { viewTransition: true })} />
       )}
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => { justDragged.mark(); onDragEnd(e); }}>

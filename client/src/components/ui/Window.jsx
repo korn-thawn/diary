@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
+import { markBack } from "../../motion";
 
 const WindowCtx = createContext({ actionsEl: null, setTitle: () => {} });
 
@@ -23,7 +24,7 @@ export default function Window({ title, back, wide, children }) {
             {back && (
               <button
                 className="meta -ml-1 mb-1 inline-flex min-h-9 items-center px-1 text-calm-text hover:text-warm"
-                onClick={() => (window.history.length > 1 ? navigate(-1) : navigate(back))}
+                onClick={() => { markBack(); window.history.length > 1 ? navigate(-1) : navigate(back, { viewTransition: true }); }}
               >
                 ← กลับ
               </button>
@@ -32,7 +33,7 @@ export default function Window({ title, back, wide, children }) {
           </div>
           <div ref={setActionsEl} className="flex shrink-0 flex-wrap items-center gap-2" />
         </header>
-        <div style={{ viewTransitionName: "win-body" }}>{children}</div>
+        <div className="page-enter" style={{ viewTransitionName: "win-body" }}>{children}</div>
       </section>
     </WindowCtx.Provider>
   );

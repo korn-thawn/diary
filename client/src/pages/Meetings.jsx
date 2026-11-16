@@ -7,6 +7,7 @@ import { color, repeatText } from "../palette";
 import { countdown } from "./Events";
 import MeetingModal from "../components/MeetingModal";
 import { TitleButton, WindowActions } from "../components/ui/Window";
+import Loading from "../components/ui/Loading";
 
 export default function Meetings() {
   const { setUser } = useAuth();
@@ -31,7 +32,7 @@ export default function Meetings() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!meetings) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
+  if (!meetings) return <Loading />;
 
   const upcoming = meetings.filter((m) => m.next).sort((a, b) => (a.next.date + a.next.start).localeCompare(b.next.date + b.next.start));
   const ended = meetings.filter((m) => !m.next);

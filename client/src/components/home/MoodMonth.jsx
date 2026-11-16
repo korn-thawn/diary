@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { addMonths } from "../../dates";
 import { ATMOSPHERES, atmosphereOf } from "../../night";
+import { useReveal } from "../../motion";
 
 const monthName = (month) => {
   const [y, m] = month.split("-").map(Number);
@@ -13,6 +14,7 @@ const monthName = (month) => {
  * dashed = still to come, cream outline = tonight. Every square also says it in words for screen readers.
  */
 export default function MoodMonth({ month, days, today, onMonth }) {
+  const lights = useReveal();
   const [y, m] = month.split("-").map(Number);
   const count = new Date(y, m, 0).getDate();
   const byDate = new Map(days.map((d) => [d.date, d]));
@@ -39,7 +41,7 @@ export default function MoodMonth({ month, days, today, onMonth }) {
         key={date}
         to={entry ? `/entries/${entry.id}` : `/entries/new?date=${date}`}
         viewTransition
-        className={`${base} transition-[filter] hover:brightness-110 hover:text-current`}
+        className={`${base} transition-[filter,transform] duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:text-current`}
         aria-label={label}
         title={state}
       >
@@ -86,8 +88,15 @@ export default function MoodMonth({ month, days, today, onMonth }) {
             </li>
           </ul>
         </div>
-        <div className="grid flex-[2_1_420px] grid-cols-[repeat(auto-fill,minmax(56px,1fr))] content-start gap-2" role="list" aria-label={`ปฏิทินอารมณ์ ${title}`}>
-          {cells.map((c) => <div key={c.key} role="listitem">{c}</div>)}
+        <div
+          ref={lights}
+          data-reveal="lights"
+          className="grid flex-[2_1_420px] grid-cols-[repeat(auto-fill,minmax(56px,1fr))] content-start gap-2"
+          style={{ viewTransitionName: "mood-grid" }}
+          role="list"
+          aria-label={`ปฏิทินอารมณ์ ${title}`}
+        >
+          {cells.map((c, i) => <div key={c.key} role="listitem" style={{ "--i": i }}>{c}</div>)}
         </div>
       </div>
     </section>

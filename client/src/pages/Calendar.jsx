@@ -287,7 +287,7 @@ export default function Calendar() {
               <button className="btn btn-outline px-2.5 py-1.5 text-sm" onClick={() => setAddingMeeting(true)}>
                 <UsersIcon className="size-4" aria-hidden="true" /> เพิ่มประชุม
               </button>
-              <button className="btn btn-primary px-2.5 py-1.5 text-sm" onClick={() => navigate(`/entries/new?date=${selected}`)}>
+              <button className="btn btn-primary px-2.5 py-1.5 text-sm" onClick={() => navigate(`/entries/new?date=${selected}`, { viewTransition: true })}>
                 <PencilSquareIcon className="size-4" aria-hidden="true" /> เขียนบันทึก
               </button>
             </div>

@@ -6,6 +6,7 @@ import { useAuth } from "../auth";
 import { color, ICONS } from "../palette";
 import EventModal from "../components/EventModal";
 import { TitleButton, WindowActions } from "../components/ui/Window";
+import Loading from "../components/ui/Loading";
 
 const REPEAT_LABEL = { none: "ครั้งเดียว", monthly: "ทุกเดือน", yearly: "ทุกปี" };
 
@@ -37,7 +38,7 @@ export default function Events() {
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (error) return <p className="text-red-600">{error}</p>;
-  if (!events) return <p className="text-center text-stone-500">กำลังโหลด…</p>;
+  if (!events) return <Loading />;
 
   const upcoming = events.filter((e) => e.next);
   const past = events.filter((e) => !e.next);

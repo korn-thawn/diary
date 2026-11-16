@@ -5,6 +5,7 @@ import { api, formatDate, photoUrl } from "../api";
 import { useAuth } from "../auth";
 import { MoodDot } from "../components/Mood";
 import { WindowActions } from "../components/ui/Window";
+import Loading from "../components/ui/Loading";
 
 const PAGE = 30;
 
@@ -198,7 +199,7 @@ export default function EntryList() {
         </section>
       ))}
 
-      {loading && <p className="text-center text-stone-500">กำลังโหลด…</p>}
+      {loading && <Loading />}
       {hasMore && !loading && (
         <div className="text-center">
           <button className="btn btn-ghost" onClick={() => load(entries.length)}>

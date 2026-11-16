@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation, useSearchParams } from "react-router";
+import { Navigate, Route, Routes, ScrollRestoration, useLocation, useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import { ExclamationTriangleIcon, SignalSlashIcon } from "@heroicons/react/20/solid";
 import { useAuth } from "./auth";
@@ -87,6 +87,7 @@ export default function App() {
 
   return (
     <div className={`min-h-dvh ${user && !isAuthPage ? "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-10" : "pb-10"}`}>
+      <ScrollRestoration />
       <OfflineBanner />
       <SiteHeader />
       <InsecureBanner />
